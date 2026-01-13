@@ -120,7 +120,14 @@ class AnthropicService {
 
         const currentFocus = context.cyclePhase ? phaseFocus[context.cyclePhase] || '' : '';
 
+        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const today = days[new Date().getDay()];
+
         return `You are a certified nutritionist creating a personalized 7-day meal plan.
+        
+CONTEXT:
+- Today is ${today}.
+- Start the plan from ${today} (Day 1).
 
 USER PROFILE:
 - Daily calorie target: ${context.calorieGoal} calories
@@ -135,7 +142,7 @@ ${context.cyclePhase ? `- Current cycle phase: ${context.cyclePhase}` : ''}
 ${currentFocus ? `PHASE GUIDANCE: ${currentFocus}` : ''}
 
 REQUIREMENTS:
-1. Create a 7-day meal plan
+1. Create a 7-day meal plan starting from ${today}
 2. Each day: breakfast, lunch, dinner, and 2 snacks
 3. Daily totals within 10% of calorie target
 4. ${context.isDiabetic ? 'All meals must be diabetic-friendly (low glycemic)' : ''}
@@ -144,7 +151,7 @@ REQUIREMENTS:
 7. SHOPPING LIST: Use store-friendly units (grams, kg, pieces, bunches, cans, packages). Aggregate similar items (e.g., combine "firm tofu" and "extra-firm tofu" as "tofu"). Round to practical amounts.
 
 Return ONLY valid JSON (no markdown):
-{"days":[{"date":"Day 1","dayOfWeek":"Monday","meals":{"breakfast":{"id":"b1","name":"Meal","description":"Desc","ingredients":[{"name":"item","amount":"100","unit":"g","category":"produce"}],"macros":{"calories":300,"protein":15,"carbs":30,"fat":10},"tags":["vegan"],"diabeticFriendly":true},"lunch":{...},"dinner":{...},"snacks":[{...},{...}]},"exercise":{"name":"Exercise","duration":30,"intensity":"medium","description":"Desc","caloriesBurned":200},"totals":{"calories":1400,"protein":100,"carbs":120,"fat":50}}],"shoppingList":[{"name":"tofu","amount":"800","unit":"g","category":"protein"}],"summary":"Summary"}`;
+{"days":[{"date":"Day 1","dayOfWeek":"${today}","meals":{"breakfast":{"id":"b1","name":"Meal","description":"Desc","ingredients":[{"name":"item","amount":"100","unit":"g","category":"produce"}],"macros":{"calories":300,"protein":15,"carbs":30,"fat":10},"tags":["vegan"],"diabeticFriendly":true},"lunch":{...},"dinner":{...},"snacks":[{...},{...}]},"exercise":{"name":"Exercise","duration":30,"intensity":"medium","description":"Desc","caloriesBurned":200},"totals":{"calories":1400,"protein":100,"carbs":120,"fat":50}}],"shoppingList":[{"name":"tofu","amount":"800","unit":"g","category":"protein"}],"summary":"Summary"}`;
     }
 
     /**

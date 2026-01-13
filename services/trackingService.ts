@@ -141,6 +141,27 @@ class TrackingService {
             };
 
             const docRef = await addDoc(collection(db, 'mealLogs'), mealLog);
+            console.log('Successfully logged to mealLogs with ID:', docRef.id);
+
+            // Also log to the main 'meals' collection so it shows up in the dashboard/history
+            try {
+                // Use top-level import if possible, but for now wrap in try-catch with logging
+                const { mealService } = require('./meals');
+                console.log('Attempting to dual-log to meals collection for user:', userId);
+                const mainDocId = await mealService.logMeal(
+                    userId,
+                    [scanned], // Pass as array of foods
+                    mealType, // Use specific type
+                    undefined,
+                    planned,
+                    score,
+                    feedback
+                );
+                console.log('Successfully dual-logged to meals with ID:', mainDocId);
+            } catch (innerError) {
+                console.error('CRITICAL: Failed to dual-log to meals collection:', innerError);
+                // Do not throw here, so we at least pass the primary log
+            }
 
             return { ...mealLog, id: docRef.id };
         } catch (error) {

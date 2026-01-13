@@ -25,6 +25,9 @@ export interface MealLog {
     totalFat: number;
     mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack';
     photoUri?: string;
+    plannedMeal?: any; // Store the planned meal object
+    matchScore?: number;
+    feedback?: string;
     createdAt: Date;
 }
 
@@ -45,7 +48,10 @@ class MealService {
         userId: string,
         foods: NutritionInfo[],
         mealType: MealLog['mealType'] = 'snack',
-        photoUri?: string
+        photoUri?: string,
+        plannedMeal?: any,
+        matchScore?: number,
+        feedback?: string
     ): Promise<string> {
         const totals = foods.reduce(
             (acc, food) => ({
@@ -58,7 +64,7 @@ class MealService {
         );
 
         try {
-            const docRef = await addDoc(collection(db, 'meals'), {
+            const mealData: any = {
                 userId,
                 foods,
                 totalCalories: totals.calories,
@@ -66,9 +72,16 @@ class MealService {
                 totalCarbs: totals.carbs,
                 totalFat: totals.fat,
                 mealType,
-                photoUri,
                 createdAt: serverTimestamp(),
-            });
+            };
+
+            // Only add optional fields if they are defined
+            if (photoUri) mealData.photoUri = photoUri;
+            if (plannedMeal) mealData.plannedMeal = plannedMeal;
+            if (matchScore !== undefined) mealData.matchScore = matchScore;
+            if (feedback) mealData.feedback = feedback;
+
+            const docRef = await addDoc(collection(db, 'meals'), mealData);
 
             console.log('Meal logged with ID:', docRef.id);
             return docRef.id;
@@ -82,7 +95,10 @@ class MealService {
      * Get meals for a specific date
      */
     async getMealsForDate(userId: string, date: Date): Promise<MealLog[]> {
-        const targetDateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD
+        // Use local date comparisons to avoid timezone issues with toISOString (UTC)
+        const targetYear = date.getFullYear();
+        const targetMonth = date.getMonth();
+        const targetDay = date.getDate();
 
         try {
             // Simple query without orderBy to avoid index requirement
@@ -103,12 +119,16 @@ class MealService {
                     createdAt: doc.data().createdAt?.toDate() || new Date(),
                 }))
                 .filter(meal => {
-                    const mealDateStr = meal.createdAt.toISOString().split('T')[0];
-                    return mealDateStr === targetDateStr;
+                    const d = meal.createdAt;
+                    return d.getFullYear() === targetYear &&
+                        d.getMonth() === targetMonth &&
+                        d.getDate() === targetDay;
                 })
                 .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
-            console.log(`Filtered to ${meals.length} meals for ${targetDateStr}`);
+
+
+            console.log(`Filtered to ${meals.length} meals for ${targetYear}-${targetMonth + 1}-${targetDay}`);
             return meals as MealLog[];
         } catch (error) {
             console.error('Failed to get meals:', error);

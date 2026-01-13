@@ -26,6 +26,8 @@ export interface OnboardingData {
     // Step 4
     trackCycle: boolean;
     cycleLength?: number;
+    periodLength?: number;
+    lastPeriodDate?: string; // stored as ISO string in storage
     trackSymptoms?: boolean;
 
     // Step 5
@@ -36,6 +38,13 @@ export interface OnboardingData {
     isDiabetic: boolean;
     diabetesType?: 'type1' | 'type2' | 'gestational' | 'prediabetic';
     usesInsulin?: boolean;
+
+    // Step 6 (Meal Times)
+    mealTimes?: {
+        breakfast: string;
+        lunch: string;
+        dinner: string;
+    };
 
     // Calculated
     calorieGoal: number;
@@ -104,17 +113,21 @@ class OnboardingStorageService {
             targetWeightKg: data.targetWeightKg,
             trackCycle: data.trackCycle ?? false,
             cycleLength: data.cycleLength,
+            periodLength: data.periodLength,
             trackSymptoms: data.trackSymptoms,
+
             dietaryPreferences: data.dietaryPreferences ?? [],
             allergies: data.allergies ?? [],
             isDiabetic: data.isDiabetic ?? false,
             diabetesType: data.diabetesType,
             usesInsulin: data.usesInsulin,
+            mealTimes: data.mealTimes,
             calorieGoal,
             proteinGoal: macros.protein,
             carbsGoal: macros.carbs,
             fatGoal: macros.fat,
             completedAt: new Date().toISOString(),
+            lastPeriodDate: data.lastPeriodDate,
         };
 
         await this.saveOnboardingData(completeData);
@@ -157,12 +170,16 @@ class OnboardingStorageService {
             targetWeightKg: data.targetWeightKg,
             trackCycle: data.trackCycle,
             cycleLength: data.cycleLength,
+            periodLength: data.periodLength,
+            lastPeriodDate: data.lastPeriodDate,
             trackSymptoms: data.trackSymptoms,
             dietaryPreferences: data.dietaryPreferences,
             allergies: data.allergies,
+
             isDiabetic: data.isDiabetic,
             diabetesType: data.diabetesType,
             usesInsulin: data.usesInsulin,
+            mealTimes: data.mealTimes,
             calorieGoal: data.calorieGoal,
             proteinGoal: data.proteinGoal,
             carbsGoal: data.carbsGoal,

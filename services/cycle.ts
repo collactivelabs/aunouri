@@ -45,11 +45,107 @@ export interface CycleInfo {
     ovulationDate: Date;
 }
 
+export interface CycleDayLog {
+    id?: string;
+    userId: string;
+    date: string; // YYYY-MM-DD
+    flow?: 'spotting' | 'light' | 'medium' | 'heavy' | null;
+    symptoms: string[];
+    mood?: string;
+    notes?: string | null;
+    updatedAt?: Date;
+}
+
 class CycleService {
+    // ... existing methods ...
+
     /**
-     * Get or create cycle settings for user
+     * Log details for a specific cycle day
      */
+    async logCycleDay(userId: string, date: Date, data: Partial<CycleDayLog>): Promise<void> {
+        try {
+            const dateStr = date.toISOString().split('T')[0];
+            const logId = `${userId}_${dateStr}`;
+            const docRef = doc(db, 'dailyLogs', logId);
+
+            // Check if we need to update period tracking based on flow
+            if (data.flow && data.flow !== 'spotting') {
+                // Logic to start/extend period would go here, 
+                // but for now we focus on the daily log itself
+            }
+
+            await setDoc(docRef, {
+                userId,
+                date: dateStr,
+                ...data, // flow, symptoms, etc
+                updatedAt: serverTimestamp(),
+            }, { merge: true });
+
+            // Update period tracking logic
+            if (data.flow && data.flow !== 'spotting') {
+                const settings = await this.getCycleSettings(userId);
+                const currentStart = settings.lastPeriodStart;
+                let shouldUpdate = false;
+
+                if (!currentStart) {
+                    shouldUpdate = true;
+                } else {
+                    const diffTime = date.getTime() - currentStart.getTime();
+                    const diffDays = diffTime / (1000 * 3600 * 24);
+
+                    // If this is a new cycle (more than 14 days since last start)
+                    // OR if this is an earlier start for the current cycle (within 7 days prior)
+                    if (diffDays > 14 || (diffDays < 0 && diffDays > -7)) {
+                        shouldUpdate = true;
+                    }
+                }
+
+                if (shouldUpdate) {
+                    await this.saveCycleSettings({
+                        ...settings,
+                        lastPeriodStart: date
+                    });
+                }
+            }
+        } catch (error) {
+            console.error('Failed to log cycle day:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Get logs for a date range
+     */
+    async getDailyLogs(userId: string, startDate: Date, endDate: Date): Promise<CycleDayLog[]> {
+        try {
+            const logsRef = collection(db, 'dailyLogs');
+            const startStr = startDate.toISOString().split('T')[0];
+            const endStr = endDate.toISOString().split('T')[0];
+
+            const q = query(
+                logsRef,
+                where('userId', '==', userId),
+                where('date', '>=', startStr),
+                where('date', '<=', endStr)
+            );
+
+            const snapshot = await getDocs(q);
+            return snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            } as CycleDayLog));
+        } catch (error) {
+            console.error('Failed to get daily logs:', error);
+            return [];
+        }
+    }
+
+    // ... keeping existing methods for backward compatibility ...
+
+    // Updated getCycleSettings, saveCycleSettings, etc. need to stay
+
     async getCycleSettings(userId: string): Promise<CycleSettings> {
+        // ... same implementation ...
         try {
             const settingsRef = doc(db, 'cycleSettings', userId);
             const settingsSnap = await getDoc(settingsRef);
@@ -65,7 +161,6 @@ class CycleService {
                 };
             }
 
-            // Return defaults if no settings exist
             return {
                 userId,
                 averageCycleLength: 28,
@@ -83,9 +178,6 @@ class CycleService {
         }
     }
 
-    /**
-     * Save cycle settings
-     */
     async saveCycleSettings(settings: CycleSettings): Promise<void> {
         try {
             const settingsRef = doc(db, 'cycleSettings', settings.userId);
@@ -100,12 +192,9 @@ class CycleService {
         }
     }
 
-    /**
-     * Log period start
-     */
     async logPeriodStart(userId: string, date: Date, flow: PeriodLog['flow'] = 'medium'): Promise<string> {
+        // Legacy support - marks the start date
         try {
-            // Save the period log
             const docRef = await addDoc(collection(db, 'periods'), {
                 userId,
                 startDate: Timestamp.fromDate(date),
@@ -113,12 +202,15 @@ class CycleService {
                 createdAt: serverTimestamp(),
             });
 
-            // Update last period start in settings
+            // Update last period start
             const settings = await this.getCycleSettings(userId);
             await this.saveCycleSettings({
                 ...settings,
                 lastPeriodStart: date,
             });
+
+            // ALSO create a daily log for this day to keep in sync
+            await this.logCycleDay(userId, date, { flow });
 
             return docRef.id;
         } catch (error) {
@@ -127,28 +219,8 @@ class CycleService {
         }
     }
 
-    /**
-     * Log period end
-     */
-    async logPeriodEnd(periodId: string, endDate: Date): Promise<void> {
-        try {
-            const periodRef = doc(db, 'periods', periodId);
-            await setDoc(periodRef, {
-                endDate: Timestamp.fromDate(endDate),
-                updatedAt: serverTimestamp(),
-            }, { merge: true });
-        } catch (error) {
-            console.error('Failed to log period end:', error);
-            throw error;
-        }
-    }
-
-    /**
-     * Get recent periods
-     */
     async getRecentPeriods(userId: string, count: number = 6): Promise<PeriodLog[]> {
         try {
-            // Simple query without orderBy to avoid index requirement
             const periodsRef = collection(db, 'periods');
             const q = query(
                 periodsRef,
@@ -157,8 +229,7 @@ class CycleService {
 
             const snapshot = await getDocs(q);
 
-            // Sort and limit in memory
-            const periods = snapshot.docs
+            return snapshot.docs
                 .map(doc => ({
                     id: doc.id,
                     userId: doc.data().userId,
@@ -169,49 +240,38 @@ class CycleService {
                 }))
                 .sort((a, b) => b.startDate.getTime() - a.startDate.getTime())
                 .slice(0, count);
-
-            return periods;
         } catch (error) {
             console.error('Failed to get recent periods:', error);
             return [];
         }
     }
 
-    /**
-     * Calculate current cycle info
-     */
     async getCycleInfo(userId: string): Promise<CycleInfo> {
         const settings = await this.getCycleSettings(userId);
         const today = new Date();
 
-        // Default values if no period logged
         const lastPeriodStart = settings.lastPeriodStart || new Date(today.getTime() - 14 * 24 * 60 * 60 * 1000);
         const cycleLength = settings.averageCycleLength;
         const periodLength = settings.averagePeriodLength;
 
-        // Calculate day of cycle
         const diffTime = today.getTime() - lastPeriodStart.getTime();
         const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
         const dayOfCycle = (diffDays % cycleLength) + 1;
 
-        // Calculate next period
         const daysUntilNextPeriod = cycleLength - dayOfCycle + 1;
         const nextPeriodDate = new Date(today);
         nextPeriodDate.setDate(nextPeriodDate.getDate() + daysUntilNextPeriod);
 
-        // Calculate ovulation (typically day 14 of a 28-day cycle)
         const ovulationDay = Math.round(cycleLength / 2);
         const daysUntilOvulation = ovulationDay - dayOfCycle;
         const ovulationDate = new Date(today);
         ovulationDate.setDate(ovulationDate.getDate() + daysUntilOvulation);
 
-        // Fertile window is typically 5 days before ovulation + ovulation day
         const fertileWindowStart = new Date(ovulationDate);
         fertileWindowStart.setDate(fertileWindowStart.getDate() - 5);
         const fertileWindowEnd = new Date(ovulationDate);
         fertileWindowEnd.setDate(fertileWindowEnd.getDate() + 1);
 
-        // Determine current phase
         let currentPhase: CyclePhase;
         if (dayOfCycle <= periodLength) {
             currentPhase = 'menstrual';

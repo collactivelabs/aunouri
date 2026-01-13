@@ -167,6 +167,50 @@ export default function MealDetailsScreen() {
                     </View>
                 </Card>
 
+                {/* Plan Comparison */}
+                {meal.plannedMeal && (
+                    <Card style={styles.comparisonCard}>
+                        <View style={styles.comparisonHeader}>
+                            <Text style={[styles.sectionTitle, { color: theme.text, marginBottom: 0 }]}>
+                                Plan Comparison
+                            </Text>
+                            {meal.matchScore !== undefined && (
+                                <View style={[styles.scoreBadge, {
+                                    backgroundColor: meal.matchScore >= 80 ? Colors.primary[500] + '20' :
+                                        meal.matchScore >= 50 ? Colors.secondary[500] + '20' :
+                                            Colors.tertiary[500] + '20'
+                                }]}>
+                                    <Text style={[styles.scoreText, {
+                                        color: meal.matchScore >= 80 ? Colors.primary[500] :
+                                            meal.matchScore >= 50 ? Colors.secondary[500] :
+                                                Colors.tertiary[500]
+                                    }]}>
+                                        {Math.round(meal.matchScore)}% Match
+                                    </Text>
+                                </View>
+                            )}
+                        </View>
+
+                        <View style={styles.plannedMealInfo}>
+                            <Text style={[styles.plannedLabel, { color: theme.textMuted }]}>
+                                Planned:
+                            </Text>
+                            <Text style={[styles.plannedName, { color: theme.text }]}>
+                                {meal.plannedMeal.name}
+                            </Text>
+                        </View>
+
+                        {meal.feedback && (
+                            <View style={styles.feedbackContainer}>
+                                <Ionicons name="information-circle-outline" size={20} color={theme.textMuted} style={{ marginTop: 2 }} />
+                                <Text style={[styles.feedbackText, { color: theme.textSecondary }]}>
+                                    {meal.feedback}
+                                </Text>
+                            </View>
+                        )}
+                    </Card>
+                )}
+
                 {/* Nutrition Summary */}
                 <Card style={styles.nutritionCard}>
                     <Text style={[styles.sectionTitle, { color: theme.text }]}>
@@ -279,6 +323,17 @@ const styles = StyleSheet.create({
     mealTitleContainer: { flex: 1 },
     mealType: { ...Typography.h3 },
     mealDate: { ...Typography.caption, marginTop: spacing.xs },
+
+    // Comparison card
+    comparisonCard: { marginBottom: spacing.md },
+    comparisonHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.md },
+    scoreBadge: { paddingHorizontal: spacing.sm, paddingVertical: 4, borderRadius: borderRadius.full },
+    scoreText: { ...Typography.caption, fontWeight: '700' },
+    plannedMealInfo: { marginBottom: spacing.md },
+    plannedLabel: { ...Typography.caption, marginBottom: 2 },
+    plannedName: { ...Typography.body, fontWeight: '600' },
+    feedbackContainer: { flexDirection: 'row', backgroundColor: Colors.neutral[100], padding: spacing.sm, borderRadius: borderRadius.md },
+    feedbackText: { ...Typography.caption, flex: 1, marginLeft: spacing.xs },
 
     // Nutrition card
     nutritionCard: { marginBottom: spacing.md },

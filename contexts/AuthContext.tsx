@@ -4,6 +4,7 @@
  * Note: Google Sign-In requires a development build - disabled for Expo Go
  */
 
+import cycleService, { CycleSettings } from '@/services/cycle';
 import { auth, db } from '@/services/firebase';
 // Google Sign-In disabled for Expo Go compatibility
 // import { GoogleSignin } from '@react-native-google-signin/google-signin';
@@ -57,6 +58,13 @@ interface UserProfile {
     // Diet preferences (from onboarding step 6)
     dietaryPreferences?: string[];
     allergies?: string[];
+
+    // Meal Times (from onboarding step 6)
+    mealTimes?: {
+        breakfast: string;
+        lunch: string;
+        dinner: string;
+    };
 
     // Calculated goals
     calorieGoal?: number;
@@ -133,7 +141,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         console.log('Creating user profile with onboarding data:', profile);
         await setDoc(doc(db, 'users', newUser.uid), profile);
+        await setDoc(doc(db, 'users', newUser.uid), profile);
         setUserProfile(profile);
+
+        setUserProfile(profile);
+
+        // Schedule notification reminders if meal times are set
+        if (onboardingData?.mealTimes) {
+            try {
+                // Import dynamically to avoid circular dependencies if any (though here it's fine)
+                const { notificationService } = require('@/services/notificationService');
+                await notificationService.scheduleMealReminders(onboardingData.mealTimes);
+                console.log('Meal time notifications scheduled');
+            } catch (error) {
+                console.error('Failed to schedule meal notifications:', error);
+            }
+        }
+
+        // Save Cycle Settings if available
+        if (onboardingData?.trackCycle) {
+            try {
+                const cycleSettings: CycleSettings = {
+                    userId: newUser.uid,
+                    averageCycleLength: onboardingData.cycleLength || 28,
+                    averagePeriodLength: onboardingData.periodLength || 5,
+                    lastPeriodStart: onboardingData.lastPeriodDate ? new Date(onboardingData.lastPeriodDate) : undefined,
+                    notifications: true,
+                };
+                await cycleService.saveCycleSettings(cycleSettings);
+                console.log('Cycle settings saved successfully');
+            } catch (error) {
+                console.error('Failed to save cycle settings during registration:', error);
+                // Non-blocking error
+            }
+        }
     };
 
     const signOut = async () => {

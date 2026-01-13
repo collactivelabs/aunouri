@@ -10,9 +10,11 @@ import { Colors } from '@/constants/Colors';
 import { borderRadius, spacing } from '@/constants/Layout';
 import { Typography } from '@/constants/Typography';
 import { Ionicons } from '@expo/vector-icons';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useState } from 'react';
 import {
+    Platform,
     ScrollView,
     StyleSheet,
     Text,
@@ -29,6 +31,9 @@ export default function Step4Cycle() {
 
     const [trackCycle, setTrackCycle] = useState<boolean | null>(null);
     const [cycleLength, setCycleLength] = useState('28');
+    const [periodLength, setPeriodLength] = useState('5');
+    const [lastPeriodDate, setLastPeriodDate] = useState(new Date());
+    const [showDatePicker, setShowDatePicker] = useState(false);
     const [trackSymptoms, setTrackSymptoms] = useState(true);
 
     const handleNext = () => {
@@ -38,6 +43,8 @@ export default function Step4Cycle() {
                 ...params,
                 trackCycle: trackCycle ? 'true' : 'false',
                 cycleLength: trackCycle ? cycleLength : '0',
+                periodLength: trackCycle ? periodLength : '0',
+                lastPeriodDate: trackCycle ? lastPeriodDate.toISOString() : undefined,
                 trackSymptoms: trackSymptoms ? 'true' : 'false',
             },
         });
@@ -145,6 +152,56 @@ export default function Step4Cycle() {
                             </View>
                         </View>
 
+                        <View style={styles.inputGroup}>
+                            <Text style={[styles.label, { color: theme.text }]}>
+                                Average period length
+                            </Text>
+                            <View style={styles.inputRow}>
+                                <TextInput
+                                    style={[
+                                        styles.input,
+                                        { backgroundColor: theme.card, color: theme.text },
+                                    ]}
+                                    value={periodLength}
+                                    onChangeText={setPeriodLength}
+                                    placeholder="5"
+                                    placeholderTextColor={theme.textMuted}
+                                    keyboardType="number-pad"
+                                    maxLength={1}
+                                />
+                                <Text style={[styles.unit, { color: theme.textMuted }]}>days</Text>
+                            </View>
+                        </View>
+
+                        <View style={styles.inputGroup}>
+                            <Text style={[styles.label, { color: theme.text }]}>
+                                Last period start date
+                            </Text>
+                            <TouchableOpacity
+                                style={[styles.dateInput, { backgroundColor: theme.card }]}
+                                onPress={() => setShowDatePicker(true)}
+                            >
+                                <Text style={[styles.dateText, { color: theme.text }]}>
+                                    {lastPeriodDate.toLocaleDateString()}
+                                </Text>
+                                <Ionicons name="calendar-outline" size={20} color={theme.textMuted} />
+                            </TouchableOpacity>
+                            {showDatePicker && (
+                                <DateTimePicker
+                                    value={lastPeriodDate}
+                                    mode="date"
+                                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                                    onChange={(event, selectedDate) => {
+                                        setShowDatePicker(false);
+                                        if (selectedDate) {
+                                            setLastPeriodDate(selectedDate);
+                                        }
+                                    }}
+                                    maximumDate={new Date()}
+                                />
+                            )}
+                        </View>
+
                         <TouchableOpacity
                             style={styles.toggleRow}
                             onPress={() => setTrackSymptoms(!trackSymptoms)}
@@ -250,6 +307,15 @@ const styles = StyleSheet.create({
         fontSize: 18,
         textAlign: 'center',
     },
+    dateInput: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        height: 50,
+        borderRadius: borderRadius.md,
+        paddingHorizontal: spacing.md,
+    },
+    dateText: { ...Typography.body },
     unit: { ...Typography.body },
 
     // Toggle

@@ -220,13 +220,17 @@ export default function HomeScreen() {
                                     </Text>
                                 </View>
                                 <Text style={[styles.nextMealName, { color: theme.text }]} numberOfLines={1}>
-                                    {/* Simplified logic to show next meal approx */}
-                                    {new Date().getHours() < 11
-                                        ? activePlan.days[0]?.meals?.breakfast?.name || 'Breakfast'
-                                        : new Date().getHours() < 15
-                                            ? activePlan.days[0]?.meals?.lunch?.name || 'Lunch'
-                                            : activePlan.days[0]?.meals?.dinner?.name || 'Dinner'
-                                    }
+                                    {(() => {
+                                        const hour = new Date().getHours();
+                                        const dayIndex = new Date().getDay() - 1;
+                                        const safeDayIndex = dayIndex >= 0 ? dayIndex : 0; // Default to 0 (Monday) if Sunday (weekend logic todo)
+                                        // Handle potential out of bounds if plan doesn't have 7 days
+                                        const dayPlan = activePlan.days[safeDayIndex] || activePlan.days[0];
+
+                                        if (hour < 11) return dayPlan?.meals?.breakfast?.name || 'Breakfast';
+                                        if (hour < 15) return dayPlan?.meals?.lunch?.name || 'Lunch';
+                                        return dayPlan?.meals?.dinner?.name || 'Dinner';
+                                    })()}
                                 </Text>
                                 <TouchableOpacity onPress={handleToggleExercise}>
                                     <Text style={[styles.exerciseStatus, { color: dailyProgress.exerciseCompleted ? Colors.secondary[500] : theme.textMuted }]}>

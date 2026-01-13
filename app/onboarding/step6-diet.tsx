@@ -1,6 +1,6 @@
 /**
- * AuNouri - Onboarding Step 6: Dietary Preferences
- * Collect dietary restrictions and preferences
+ * AuNouri - Onboarding Step 6: Dietary & Meal Preferences
+ * Collect dietary restrictions and set simplified meal times
  */
 
 import { Button } from '@/components/ui/Button';
@@ -17,8 +17,9 @@ import {
     ScrollView,
     StyleSheet,
     Text,
+    TextInput,
     TouchableOpacity,
-    View,
+    View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -56,10 +57,31 @@ export default function Step6Diet() {
     const [dietaryPrefs, setDietaryPrefs] = useState<string[]>([]);
     const [allergies, setAllergies] = useState<string[]>([]);
 
+    // Default meal times
+    const [mealTimes, setMealTimes] = useState({
+        breakfast: '08:00',
+        lunch: '13:00',
+        dinner: '19:00'
+    });
+
     const toggleDiet = (id: string) => {
-        setDietaryPrefs(prev =>
-            prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]
-        );
+        const EXCLUSIVE_DIETS = ['vegetarian', 'vegan', 'pescatarian', 'keto', 'paleo'];
+
+        setDietaryPrefs(prev => {
+            // If selecting an exclusive diet
+            if (EXCLUSIVE_DIETS.includes(id)) {
+                // If it's already selected, remove it
+                if (prev.includes(id)) {
+                    return prev.filter(p => p !== id);
+                }
+                // Otherwise, select it AND remove any other exclusive diets
+                // But keep non-exclusive ones (like gluten-free, halal)
+                return [...prev.filter(p => !EXCLUSIVE_DIETS.includes(p)), id];
+            }
+
+            // For non-exclusive options (halal, gluten-free, etc.), just toggle
+            return prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id];
+        });
     };
 
     const toggleAllergy = (id: string) => {
@@ -77,6 +99,7 @@ export default function Step6Diet() {
                 ...params,
                 dietaryPrefs: dietaryPrefs.join(','),
                 allergies: allergies.join(','),
+                mealTimes: JSON.stringify(mealTimes), // Pass as JSON string
             },
         });
     };
@@ -115,10 +138,10 @@ export default function Step6Diet() {
                 <View style={styles.header}>
                     <Text style={styles.emoji}>🍽️</Text>
                     <Text style={[styles.title, { color: theme.text }]}>
-                        Dietary preferences
+                        Dietary & Meal Preferences
                     </Text>
                     <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
-                        Optional: Help us personalize your food recommendations
+                        Help us personalize your food recommendations and schedule
                     </Text>
                 </View>
 
@@ -192,6 +215,51 @@ export default function Step6Diet() {
                 </View>
 
                 <View style={styles.bottomSpacer} />
+
+                {/* Meal Times */}
+                <Text style={[styles.sectionTitle, { color: theme.text }]}>
+                    Preferred Meal Times
+                </Text>
+                <Text style={{ color: theme.textSecondary, marginBottom: spacing.md }}>
+                    We'll separate your meals accordingly.
+                </Text>
+
+                <View style={{ gap: 12, marginBottom: spacing.xl }}>
+                    <View style={styles.timeRow}>
+                        <Text style={{ color: theme.text, flex: 1 }}>Breakfast</Text>
+                        <TextInput
+                            value={mealTimes.breakfast}
+                            onChangeText={(t) => setMealTimes({ ...mealTimes, breakfast: t })}
+                            style={[styles.timeInput, { color: theme.text, borderColor: theme.border }]}
+                            placeholder="08:00"
+                            maxLength={5}
+                            keyboardType="numbers-and-punctuation"
+                        />
+                    </View>
+                    <View style={styles.timeRow}>
+                        <Text style={{ color: theme.text, flex: 1 }}>Lunch</Text>
+                        <TextInput
+                            value={mealTimes.lunch}
+                            onChangeText={(t) => setMealTimes({ ...mealTimes, lunch: t })}
+                            style={[styles.timeInput, { color: theme.text, borderColor: theme.border }]}
+                            placeholder="13:00"
+                            maxLength={5}
+                            keyboardType="numbers-and-punctuation"
+                        />
+                    </View>
+                    <View style={styles.timeRow}>
+                        <Text style={{ color: theme.text, flex: 1 }}>Dinner</Text>
+                        <TextInput
+                            value={mealTimes.dinner}
+                            onChangeText={(t) => setMealTimes({ ...mealTimes, dinner: t })}
+                            style={[styles.timeInput, { color: theme.text, borderColor: theme.border }]}
+                            placeholder="19:00"
+                            maxLength={5}
+                            keyboardType="numbers-and-punctuation"
+                        />
+                    </View>
+                </View>
+
             </ScrollView>
 
             {/* Footer */}
@@ -298,4 +366,19 @@ const styles = StyleSheet.create({
     },
 
     bottomSpacer: { height: 100 },
+
+    // Time Inputs
+    timeRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: spacing.sm,
+    },
+    timeInput: {
+        borderWidth: 1,
+        borderRadius: borderRadius.md,
+        padding: spacing.sm,
+        width: 100,
+        textAlign: 'center',
+        fontSize: 16,
+    },
 });

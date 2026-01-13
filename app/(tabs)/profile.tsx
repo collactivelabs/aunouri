@@ -20,6 +20,7 @@ import React, { useCallback, useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
+    KeyboardAvoidingView,
     Modal,
     Platform,
     ScrollView,
@@ -138,7 +139,9 @@ export default function ProfileScreen() {
                 setWaterGoal(userProfile.waterGoal.toString());
             }
             // Load meal times if present (mock for now if not in profile, ideally should be in profile)
-            // if (userProfile?.mealTimes) setMealTimes(userProfile.mealTimes);
+            if (userProfile?.mealTimes) {
+                setMealTimes(userProfile.mealTimes);
+            }
             if (userProfile?.notificationsEnabled !== undefined) {
                 setNotificationsEnabled(userProfile.notificationsEnabled);
             }
@@ -221,10 +224,14 @@ export default function ProfileScreen() {
     };
 
     const handleSaveMealTimes = async () => {
-        // Ideally save to profile
-        await notificationService.scheduleMealReminders(mealTimes);
-        setShowMealTimesModal(false);
-        Alert.alert('Saved!', 'Meal reminders updated.');
+        try {
+            await updateUserProfile({ mealTimes });
+            await notificationService.scheduleMealReminders(mealTimes);
+            setShowMealTimesModal(false);
+            Alert.alert('Saved!', 'Meal reminders updated.');
+        } catch (error) {
+            Alert.alert('Error', 'Could not save meal times. Please try again.');
+        }
     };
 
     const handleSaveProfile = async () => {
@@ -451,9 +458,11 @@ export default function ProfileScreen() {
                 </View>
             </Modal>
 
-            {/* Meal Times Modal placeholder */}
-            <Modal visible={showMealTimesModal} animationType="slide" transparent>
-                <View style={styles.modalOverlay}>
+            <Modal visible={showMealTimesModal} animationType="fade" transparent>
+                <KeyboardAvoidingView
+                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                    style={styles.modalOverlay}
+                >
                     <View style={[styles.modalContent, { backgroundColor: theme.card }]}>
                         <Text style={[styles.modalTitle, { color: theme.text }]}>Meal Times</Text>
                         <Text style={{ color: theme.textMuted, marginBottom: 20, textAlign: 'center' }}>
@@ -468,6 +477,8 @@ export default function ProfileScreen() {
                                     onChangeText={(t) => setMealTimes({ ...mealTimes, breakfast: t })}
                                     style={[styles.timeInput, { color: theme.text, borderColor: theme.border }]}
                                     placeholder="08:00"
+                                    maxLength={5}
+                                    keyboardType="numbers-and-punctuation"
                                 />
                             </View>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -477,6 +488,8 @@ export default function ProfileScreen() {
                                     onChangeText={(t) => setMealTimes({ ...mealTimes, lunch: t })}
                                     style={[styles.timeInput, { color: theme.text, borderColor: theme.border }]}
                                     placeholder="13:00"
+                                    maxLength={5}
+                                    keyboardType="numbers-and-punctuation"
                                 />
                             </View>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -486,6 +499,8 @@ export default function ProfileScreen() {
                                     onChangeText={(t) => setMealTimes({ ...mealTimes, dinner: t })}
                                     style={[styles.timeInput, { color: theme.text, borderColor: theme.border }]}
                                     placeholder="19:00"
+                                    maxLength={5}
+                                    keyboardType="numbers-and-punctuation"
                                 />
                             </View>
                         </View>
@@ -495,7 +510,7 @@ export default function ProfileScreen() {
                             <Button title="Save" variant="primary" onPress={handleSaveMealTimes} />
                         </View>
                     </View>
-                </View>
+                </KeyboardAvoidingView>
             </Modal>
 
             {/* Edit Profile Modal */}

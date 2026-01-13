@@ -11,15 +11,17 @@ import { Colors } from '@/constants/Colors';
 import { borderRadius, spacing } from '@/constants/Layout';
 import { Typography } from '@/constants/Typography';
 import { useAuth } from '@/contexts/AuthContext';
-import { CycleInfo, cycleService, PeriodLog } from '@/services/cycle';
+import { CycleDayLog, CycleInfo, cycleService, PeriodLog } from '@/services/cycle';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
+    Modal,
     ScrollView,
     StyleSheet,
     Text,
+    TextInput,
     TouchableOpacity,
     View,
 } from 'react-native';
@@ -32,7 +34,11 @@ interface DayInfo {
     isPeriod: boolean;
     isToday: boolean;
     isFertile: boolean;
+    dailyLog?: CycleDayLog;
 }
+
+const FLOW_OPTIONS = ['Spotting', 'Light', 'Medium', 'Heavy'];
+const SYMPTOM_OPTIONS = ['Cramps', 'Headache', 'Bloating', 'Fatigue', 'Acne', 'Mood Swings', 'Backache', 'Nausea'];
 
 const phaseDescriptions: Record<CyclePhase, { title: string; tips: string[] }> = {
     menstrual: {
@@ -83,6 +89,13 @@ export default function CycleScreen() {
     const [recentPeriods, setRecentPeriods] = useState<PeriodLog[]>([]);
     const [selectedDay, setSelectedDay] = useState<number | null>(null);
     const [loggingPeriod, setLoggingPeriod] = useState(false);
+    const [dailyLogs, setDailyLogs] = useState<CycleDayLog[]>([]);
+
+    // Modal State
+    const [showLogModal, setShowLogModal] = useState(false);
+    const [selectedFlow, setSelectedFlow] = useState<string | null>(null);
+    const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
+    const [notes, setNotes] = useState('');
 
     const today = new Date();
     const currentMonth = today.toLocaleString('default', { month: 'long', year: 'numeric' });
@@ -95,13 +108,19 @@ export default function CycleScreen() {
         const userId = user?.uid || 'demo-user';
 
         try {
-            const [cycleData, periods] = await Promise.all([
+            const [cycleData, periods, logs] = await Promise.all([
                 cycleService.getCycleInfo(userId),
                 cycleService.getRecentPeriods(userId),
+                cycleService.getDailyLogs(
+                    userId,
+                    new Date(today.getFullYear(), today.getMonth(), 1),
+                    new Date(today.getFullYear(), today.getMonth() + 1, 0)
+                )
             ]);
 
             setCycleInfo(cycleData);
             setRecentPeriods(periods);
+            setDailyLogs(logs);
         } catch (error) {
             console.error('Failed to load cycle data:', error);
         } finally {
@@ -109,32 +128,58 @@ export default function CycleScreen() {
         }
     };
 
-    const handleLogPeriod = async () => {
+    const openLogModal = (day: number) => {
+        setSelectedDay(day);
+
+        // Find existing log for this day
+        const info = getDayInfo(day);
+        if (info?.dailyLog) {
+            setSelectedFlow(info.dailyLog.flow || null);
+            setSelectedSymptoms(info.dailyLog.symptoms || []);
+            setNotes(info.dailyLog.notes || '');
+        } else {
+            setSelectedFlow(null);
+            setSelectedSymptoms([]);
+            setNotes('');
+        }
+
+        setShowLogModal(true);
+    };
+
+    const handleSaveLog = async () => {
+        if (!selectedDay) return;
         const userId = user?.uid || 'demo-user';
 
-        // Use selected day or default to today
-        const logDate = selectedDay
-            ? new Date(today.getFullYear(), today.getMonth(), selectedDay)
-            : today;
-
-        const dateStr = logDate.toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric'
-        });
-
         setLoggingPeriod(true);
-
         try {
-            await cycleService.logPeriodStart(userId, logDate, 'medium');
-            Alert.alert('Period Logged! 🌸', `Period start recorded for ${dateStr}.`);
+            const date = new Date(today.getFullYear(), today.getMonth(), selectedDay);
+            await cycleService.logCycleDay(userId, date, {
+                flow: selectedFlow as any,
+                symptoms: selectedSymptoms,
+                notes: notes.trim() || null
+            });
+
+            setShowLogModal(false);
             loadCycleData();
-            setSelectedDay(null); // Clear selection after logging
+            Alert.alert('Saved', 'Your cycle log has been updated.');
         } catch (error) {
-            console.error('Failed to log period:', error);
-            Alert.alert('Error', 'Could not log period. Please try again.');
+            console.error('Failed to log day:', error);
+            Alert.alert('Error', 'Could not save log. Please try again.');
         } finally {
             setLoggingPeriod(false);
         }
+    };
+
+    const toggleSymptom = (symptom: string) => {
+        if (selectedSymptoms.includes(symptom)) {
+            setSelectedSymptoms(selectedSymptoms.filter(s => s !== symptom));
+        } else {
+            setSelectedSymptoms([...selectedSymptoms, symptom]);
+        }
+    };
+
+    const getDayInfo = (day: number): DayInfo | undefined => {
+        return days.find(d => d.day === day);
     };
 
     const getDaysInMonth = (): DayInfo[] => {
@@ -187,7 +232,11 @@ export default function CycleScreen() {
                 phase = 'luteal';
             }
 
-            days.push({ day: i, date, phase, isPeriod, isToday, isFertile });
+            // Check for actual log
+            const dateStr = date.toISOString().split('T')[0];
+            const dailyLog = dailyLogs.find(l => l.date === dateStr);
+
+            days.push({ day: i, date, phase, isPeriod, isToday, isFertile, dailyLog });
         }
         return days;
     };
@@ -208,8 +257,13 @@ export default function CycleScreen() {
             return <View key={`empty-${index}`} style={styles.dayCell} />;
         }
 
-        const phaseColor = Colors.cyclePhases[dayInfo.phase];
+        // Show different styles for actual data vs predicted
+        const hasLog = !!dayInfo.dailyLog;
         const isSelected = selectedDay === dayInfo.day;
+
+        let bgColor = 'transparent';
+        if (isSelected) bgColor = Colors.primary[500] + '20';
+        else if (hasLog && dayInfo.dailyLog?.flow) bgColor = Colors.cyclePhases.menstrual + '30';
 
         return (
             <TouchableOpacity
@@ -217,9 +271,9 @@ export default function CycleScreen() {
                 style={[
                     styles.dayCell,
                     dayInfo.isToday && { borderWidth: 2, borderColor: Colors.primary[500] },
-                    isSelected && { backgroundColor: phaseColor + '30' },
+                    { backgroundColor: bgColor }
                 ]}
-                onPress={() => setSelectedDay(dayInfo.day)}
+                onPress={() => openLogModal(dayInfo.day)}
             >
                 <Text
                     style={[
@@ -230,15 +284,27 @@ export default function CycleScreen() {
                 >
                     {dayInfo.day}
                 </Text>
-                {dayInfo.isPeriod && (
-                    <View style={[styles.periodDot, { backgroundColor: Colors.cyclePhases.menstrual }]} />
-                )}
-                {dayInfo.isFertile && !dayInfo.isPeriod && (
-                    <View style={[styles.periodDot, { backgroundColor: Colors.tertiary[500] }]} />
-                )}
+
+                {/* Dots for info */}
+                <View style={{ flexDirection: 'row', gap: 2 }}>
+                    {(dayInfo.isPeriod || (hasLog && dayInfo.dailyLog?.flow)) && (
+                        <View style={[styles.periodDot, {
+                            backgroundColor: Colors.cyclePhases.menstrual,
+                            opacity: dayInfo.dailyLog ? 1 : 0.4 // Predicted is transparent
+                        }]} />
+                    )}
+                    {dayInfo.isFertile && !dayInfo.isPeriod && (
+                        <View style={[styles.periodDot, { backgroundColor: Colors.tertiary[500] }]} />
+                    )}
+                    {hasLog && dayInfo.dailyLog?.symptoms?.length ? (
+                        <View style={[styles.periodDot, { backgroundColor: Colors.secondary[500] }]} />
+                    ) : null}
+                </View>
             </TouchableOpacity>
         );
     };
+
+
 
     if (loading) {
         return (
@@ -295,15 +361,12 @@ export default function CycleScreen() {
                     </View>
                 </Card>
 
-                {/* Log Period Button */}
+                {/* Log Period Button - changed to generic log prompt */}
                 <Button
-                    title={loggingPeriod ? "Logging..." :
-                        selectedDay ? `🩸 Log Period for ${selectedDay}${selectedDay === 1 ? 'st' : selectedDay === 2 ? 'nd' : selectedDay === 3 ? 'rd' : 'th'}` :
-                            "🩸 Log Period (Today)"}
-                    onPress={handleLogPeriod}
+                    title="📝 Log Today's Symptoms"
+                    onPress={() => openLogModal(today.getDate())}
                     variant="primary"
                     fullWidth
-                    loading={loggingPeriod}
                     style={{ marginBottom: spacing.lg }}
                 />
 
@@ -375,8 +438,78 @@ export default function CycleScreen() {
                     </>
                 )}
 
-                <View style={styles.bottomSpacer} />
             </ScrollView>
+
+            {/* Daily Log Modal */}
+            <Modal visible={showLogModal} animationType="slide" transparent>
+                <View style={styles.modalOverlay}>
+                    <View style={[styles.modalContent, { backgroundColor: theme.card, maxHeight: '80%' }]}>
+                        <ScrollView showsVerticalScrollIndicator={false}>
+                            <Text style={[styles.modalTitle, { color: theme.text }]}>
+                                {selectedDay ? `Log for ${currentMonth.split(' ')[0]} ${selectedDay}` : 'Daily Log'}
+                            </Text>
+
+                            {/* Flow Selection */}
+                            <Text style={[styles.sectionLabel, { color: theme.textSecondary }]}>Menstrual Flow</Text>
+                            <View style={styles.optionsGrid}>
+                                {FLOW_OPTIONS.map(flow => (
+                                    <TouchableOpacity
+                                        key={flow}
+                                        style={[
+                                            styles.optionChip,
+                                            { borderColor: theme.border },
+                                            selectedFlow === flow.toLowerCase() && { backgroundColor: Colors.cyclePhases.menstrual, borderColor: Colors.cyclePhases.menstrual }
+                                        ]}
+                                        onPress={() => setSelectedFlow(selectedFlow === flow.toLowerCase() ? null : flow.toLowerCase())}
+                                    >
+                                        <Text style={[
+                                            styles.optionText,
+                                            { color: selectedFlow === flow.toLowerCase() ? '#FFF' : theme.text }
+                                        ]}>{flow}</Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+
+                            {/* Symptoms Selection */}
+                            <Text style={[styles.sectionLabel, { color: theme.textSecondary, marginTop: spacing.md }]}>Symptoms</Text>
+                            <View style={styles.optionsGrid}>
+                                {SYMPTOM_OPTIONS.map(symptom => (
+                                    <TouchableOpacity
+                                        key={symptom}
+                                        style={[
+                                            styles.optionChip,
+                                            { borderColor: theme.border },
+                                            selectedSymptoms.includes(symptom) && { backgroundColor: Colors.secondary[500], borderColor: Colors.secondary[500] }
+                                        ]}
+                                        onPress={() => toggleSymptom(symptom)}
+                                    >
+                                        <Text style={[
+                                            styles.optionText,
+                                            { color: selectedSymptoms.includes(symptom) ? '#FFF' : theme.text }
+                                        ]}>{symptom}</Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+
+                            {/* Notes */}
+                            <Text style={[styles.sectionLabel, { color: theme.textSecondary, marginTop: spacing.md }]}>Notes</Text>
+                            <TextInput
+                                style={[styles.input, { color: theme.text, borderColor: theme.border }]}
+                                value={notes}
+                                onChangeText={setNotes}
+                                placeholder="Add notes..."
+                                placeholderTextColor={theme.textMuted}
+                                multiline
+                            />
+
+                            <View style={styles.modalButtons}>
+                                <Button title="Cancel" variant="secondary" onPress={() => setShowLogModal(false)} />
+                                <Button title="Save Log" variant="primary" onPress={handleSaveLog} loading={loggingPeriod} />
+                            </View>
+                        </ScrollView>
+                    </View>
+                </View>
+            </Modal>
         </SafeAreaView>
     );
 }
@@ -419,4 +552,14 @@ const styles = StyleSheet.create({
     periodLogDate: { ...Typography.body, flex: 1 },
     periodLogFlow: { ...Typography.caption },
     bottomSpacer: { height: 100 },
+    // Modal Styles
+    modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
+    modalContent: { borderTopLeftRadius: borderRadius.lg, borderTopRightRadius: borderRadius.lg, padding: spacing.lg },
+    modalTitle: { ...Typography.h3, marginBottom: spacing.lg, textAlign: 'center' },
+    sectionLabel: { ...Typography.label, marginBottom: spacing.sm },
+    optionsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+    optionChip: { paddingHorizontal: spacing.md, paddingVertical: spacing.sm, borderRadius: borderRadius.full, borderWidth: 1 },
+    optionText: { ...Typography.caption, fontWeight: '600' },
+    input: { minHeight: 80, padding: spacing.md, borderRadius: borderRadius.md, borderWidth: 1, textAlignVertical: 'top' },
+    modalButtons: { flexDirection: 'row', justifyContent: 'space-between', gap: spacing.md, marginTop: spacing.lg },
 });

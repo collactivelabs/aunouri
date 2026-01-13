@@ -241,7 +241,14 @@ export default function MealPlansScreen() {
                                             { color: selectedDay === index ? Colors.primary[500] : theme.text },
                                         ]}
                                     >
-                                        {index + 1}
+                                        {(() => {
+                                            if (activePlan.startDate) {
+                                                const date = new Date(activePlan.startDate);
+                                                date.setDate(date.getDate() + index);
+                                                return date.getDate();
+                                            }
+                                            return index + 1;
+                                        })()}
                                     </Text>
                                 </TouchableOpacity>
                             ))}

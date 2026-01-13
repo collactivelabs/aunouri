@@ -45,10 +45,13 @@ export default function OnboardingResults() {
             targetWeightKg: parseFloat(params.targetWeight as string),
             trackCycle: params.trackCycle === 'true',
             cycleLength: parseInt(params.cycleLength as string),
+            periodLength: parseInt(params.periodLength as string) || 5, // Default to 5 if not passed
+            lastPeriodDate: params.lastPeriodDate as string | undefined,
             trackSymptoms: params.trackSymptoms === 'true',
             isDiabetic: params.isDiabetic === 'true',
             diabetesType: params.diabetesType as any || undefined,
             usesInsulin: params.usesInsulin === 'true',
+            mealTimes: params.mealTimes ? JSON.parse(params.mealTimes as string) : undefined,
             dietaryPreferences: params.dietaryPrefs ? (params.dietaryPrefs as string).split(',').filter(Boolean) : [],
             allergies: params.allergies ? (params.allergies as string).split(',').filter(Boolean) : [],
         });
