@@ -15,6 +15,7 @@ import { healthService, UnifiedHealthData } from '@/services/health';
 import { mealPlanService, StoredMealPlan } from '@/services/mealPlanService';
 import { DailyNutrition, mealService } from '@/services/meals';
 import { DayProgress, trackingService } from '@/services/trackingService';
+import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { Link, router } from 'expo-router';
 import React, { useCallback, useState } from 'react';
@@ -169,7 +170,7 @@ export default function HomeScreen() {
                 {/* Streak Badge */}
                 {streak > 0 && (
                     <View style={[styles.streakBadge, { backgroundColor: Colors.primary[500] + '20' }]}>
-                        <Text style={styles.streakEmoji}>🔥</Text>
+                        <Ionicons name="flame" size={18} color={Colors.primary[600]} style={{ marginRight: 4 }} />
                         <Text style={[styles.streakText, { color: Colors.primary[600] }]}>
                             {streak} day streak!
                         </Text>
@@ -190,21 +191,21 @@ export default function HomeScreen() {
                             {/* Water Tracker */}
                             <View style={[styles.pulseItem, { flex: 1 }]}>
                                 <View style={styles.waterHeader}>
-                                    <Text style={styles.pulseIcon}>💧</Text>
+                                    <Ionicons name="water-outline" size={16} color={Colors.semantic.info} style={{ marginRight: spacing.xs }} />
                                     <Text style={[styles.pulseLabel, { color: theme.textMuted }]}>{dailyProgress.waterConsumed} / {waterGoal}ml</Text>
                                 </View>
                                 <View style={styles.waterButtons}>
                                     <TouchableOpacity
-                                        style={[styles.waterBtn, { backgroundColor: Colors.primary[500] + '20' }]}
+                                        style={[styles.waterBtn, { backgroundColor: Colors.semantic.info + '20' }]}
                                         onPress={() => handleLogWater(250)}
                                     >
-                                        <Text style={[styles.waterBtnText, { color: Colors.primary[600] }]}>+Cup</Text>
+                                        <Text style={[styles.waterBtnText, { color: Colors.semantic.info }]}>+Cup</Text>
                                     </TouchableOpacity>
                                     <TouchableOpacity
-                                        style={[styles.waterBtn, { backgroundColor: Colors.primary[500] + '20' }]}
+                                        style={[styles.waterBtn, { backgroundColor: Colors.semantic.info + '20' }]}
                                         onPress={() => handleLogWater(500)}
                                     >
-                                        <Text style={[styles.waterBtnText, { color: Colors.primary[600] }]}>+Bottle</Text>
+                                        <Text style={[styles.waterBtnText, { color: Colors.semantic.info }]}>+Bottle</Text>
                                     </TouchableOpacity>
                                 </View>
                             </View>
@@ -214,7 +215,7 @@ export default function HomeScreen() {
                             {/* Plan Status */}
                             <View style={[styles.pulseItem, { flex: 1 }]}>
                                 <View style={styles.planHeader}>
-                                    <Text style={styles.pulseIcon}>🥗</Text>
+                                    <Ionicons name="restaurant-outline" size={16} color={Colors.secondary[500]} style={{ marginRight: spacing.xs }} />
                                     <Text style={[styles.pulseLabel, { color: theme.textMuted }]}>
                                         {new Date().getHours() < 11 ? 'Breakfast' : new Date().getHours() < 15 ? 'Lunch' : 'Dinner'}
                                     </Text>
@@ -317,7 +318,7 @@ export default function HomeScreen() {
                         </Text>
                         <View style={styles.activityRow}>
                             <View style={styles.activityItem}>
-                                <Text style={styles.activityIcon}>👟</Text>
+                                <Ionicons name="walk-outline" size={24} color={Colors.primary[500]} style={{ marginBottom: spacing.xs }} />
                                 <Text style={[styles.activityValue, { color: Colors.primary[500] }]}>
                                     {healthData.steps.toLocaleString()}
                                 </Text>
@@ -326,7 +327,7 @@ export default function HomeScreen() {
                                 </Text>
                             </View>
                             <View style={styles.activityItem}>
-                                <Text style={styles.activityIcon}>🔥</Text>
+                                <Ionicons name="flame-outline" size={24} color={Colors.tertiary[500]} style={{ marginBottom: spacing.xs }} />
                                 <Text style={[styles.activityValue, { color: Colors.tertiary[500] }]}>
                                     {healthData.activeCalories}
                                 </Text>
@@ -335,7 +336,7 @@ export default function HomeScreen() {
                                 </Text>
                             </View>
                             <View style={styles.activityItem}>
-                                <Text style={styles.activityIcon}>😴</Text>
+                                <Ionicons name="moon-outline" size={24} color={Colors.secondary[500]} style={{ marginBottom: spacing.xs }} />
                                 <Text style={[styles.activityValue, { color: Colors.secondary[500] }]}>
                                     {healthData.sleepHours}h
                                 </Text>
@@ -344,7 +345,7 @@ export default function HomeScreen() {
                                 </Text>
                             </View>
                             <View style={styles.activityItem}>
-                                <Text style={styles.activityIcon}>📍</Text>
+                                <Ionicons name="location-outline" size={24} color={Colors.neutral[600]} style={{ marginBottom: spacing.xs }} />
                                 <Text style={[styles.activityValue, { color: Colors.neutral[600] }]}>
                                     {(healthData.distance / 1000).toFixed(1)}
                                 </Text>
@@ -363,25 +364,25 @@ export default function HomeScreen() {
                 <View style={styles.quickActions}>
                     <Link href="/(tabs)/camera" style={styles.quickActionLink}>
                         <View style={[styles.quickAction, { backgroundColor: Colors.primary[500] + '15' }]}>
-                            <Text style={styles.quickActionIcon}>📸</Text>
+                            <Ionicons name="scan-outline" size={28} color={Colors.primary[500]} style={{ marginBottom: spacing.xs }} />
                             <Text style={[styles.quickActionText, { color: theme.text }]}>Scan Food</Text>
                         </View>
                     </Link>
                     <Link href="/(tabs)/cycle" style={styles.quickActionLink}>
                         <View style={[styles.quickAction, { backgroundColor: Colors.secondary[500] + '15' }]}>
-                            <Text style={styles.quickActionIcon}>🌸</Text>
+                            <Ionicons name="calendar-number-outline" size={28} color={Colors.secondary[500]} style={{ marginBottom: spacing.xs }} />
                             <Text style={[styles.quickActionText, { color: theme.text }]}>Log Period</Text>
                         </View>
                     </Link>
                     <Link href="/(tabs)/recommendations" style={styles.quickActionLink}>
                         <View style={[styles.quickAction, { backgroundColor: Colors.tertiary[500] + '15' }]}>
-                            <Text style={styles.quickActionIcon}>💪</Text>
+                            <Ionicons name="bulb-outline" size={28} color={Colors.tertiary[500]} style={{ marginBottom: spacing.xs }} />
                             <Text style={[styles.quickActionText, { color: theme.text }]}>Get Tips</Text>
                         </View>
                     </Link>
                     <Link href="/meal-history" style={styles.quickActionLink}>
                         <View style={[styles.quickAction, { backgroundColor: Colors.neutral[500] + '15' }]}>
-                            <Text style={styles.quickActionIcon}>📊</Text>
+                            <Ionicons name="time-outline" size={28} color={Colors.neutral[500]} style={{ marginBottom: spacing.xs }} />
                             <Text style={[styles.quickActionText, { color: theme.text }]}>History</Text>
                         </View>
                     </Link>
@@ -391,8 +392,26 @@ export default function HomeScreen() {
                 <View style={styles.quickActions}>
                     <Link href="/wellness-report" style={styles.quickActionLink}>
                         <View style={[styles.quickAction, { backgroundColor: Colors.primary[500] + '15' }]}>
-                            <Text style={styles.quickActionIcon}>📈</Text>
+                            <Ionicons name="stats-chart-outline" size={28} color={Colors.primary[500]} style={{ marginBottom: spacing.xs }} />
                             <Text style={[styles.quickActionText, { color: theme.text }]}>Wellness Report</Text>
+                        </View>
+                    </Link>
+                    <Link href="/(tabs)/friends" style={styles.quickActionLink}>
+                        <View style={[styles.quickAction, { backgroundColor: Colors.secondary[500] + '15' }]}>
+                            <Ionicons name="people-outline" size={28} color={Colors.secondary[500]} style={{ marginBottom: spacing.xs }} />
+                            <Text style={[styles.quickActionText, { color: theme.text }]}>Friends</Text>
+                        </View>
+                    </Link>
+                    <Link href="/(tabs)/meal-plans" style={styles.quickActionLink}>
+                        <View style={[styles.quickAction, { backgroundColor: Colors.tertiary[500] + '15' }]}>
+                            <Ionicons name="nutrition-outline" size={28} color={Colors.tertiary[500]} style={{ marginBottom: spacing.xs }} />
+                            <Text style={[styles.quickActionText, { color: theme.text }]}>Meal Plans</Text>
+                        </View>
+                    </Link>
+                    <Link href="/(tabs)/profile" style={styles.quickActionLink}>
+                        <View style={[styles.quickAction, { backgroundColor: Colors.neutral[500] + '15' }]}>
+                            <Ionicons name="person-outline" size={28} color={Colors.neutral[500]} style={{ marginBottom: spacing.xs }} />
+                            <Text style={[styles.quickActionText, { color: theme.text }]}>Profile</Text>
                         </View>
                     </Link>
                 </View>
@@ -471,7 +490,6 @@ const styles = StyleSheet.create({
     activityCard: { marginBottom: spacing.lg },
     activityRow: { flexDirection: 'row', justifyContent: 'space-around' },
     activityItem: { alignItems: 'center' },
-    activityIcon: { fontSize: 24, marginBottom: spacing.xs },
     activityValue: { ...Typography.h4, fontWeight: '700' },
     activityLabel: { ...Typography.caption },
 
@@ -491,9 +509,9 @@ const styles = StyleSheet.create({
     sectionTitle: { ...Typography.h4, marginBottom: spacing.md },
     quickActions: { flexDirection: 'row', gap: spacing.md, marginBottom: spacing.lg },
     quickActionLink: { flex: 1 },
-    quickAction: { padding: spacing.md, borderRadius: borderRadius.lg, alignItems: 'center' },
-    quickActionIcon: { fontSize: 28, marginBottom: spacing.xs },
-    quickActionText: { ...Typography.caption, fontWeight: '600' },
+    quickAction: { padding: spacing.md, borderRadius: borderRadius.lg, alignItems: 'center', height: 110, width: '100%' },
+    // quickActionIcon: { fontSize: 28, marginBottom: spacing.xs },
+    quickActionText: { ...Typography.caption, fontWeight: '600', textAlign: 'center' },
     mealCard: { marginBottom: spacing.sm },
     mealRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
     mealType: { ...Typography.body, fontWeight: '600' },
@@ -508,7 +526,7 @@ const styles = StyleSheet.create({
     pulseItem: { alignItems: 'flex-start' },
     pulseDivider: { width: 1, backgroundColor: '#E5E5E5', height: '100%', marginHorizontal: spacing.md },
     waterHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: spacing.xs },
-    pulseIcon: { fontSize: 16, marginRight: spacing.xs },
+    // pulseIcon: { fontSize: 16, marginRight: spacing.xs },
     pulseLabel: { ...Typography.caption },
     waterButtons: { flexDirection: 'row', gap: spacing.xs, marginTop: spacing.xs },
     waterBtn: { paddingVertical: 6, paddingHorizontal: 10, borderRadius: borderRadius.sm },

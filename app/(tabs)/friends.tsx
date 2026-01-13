@@ -87,7 +87,7 @@ export default function FriendsScreen() {
             );
 
             if (result.success) {
-                Alert.alert('Request Sent! 🎉', 'Friend request has been sent.');
+                Alert.alert('Request Sent', 'Friend request has been sent.');
                 setSearchEmail('');
                 setShowAddModal(false);
             } else {
@@ -106,7 +106,7 @@ export default function FriendsScreen() {
         try {
             const success = await friendsService.acceptFriendRequest(request.id, user.uid);
             if (success) {
-                Alert.alert('Friend Added! 🎉', `You are now friends with ${request.fromUserName}.`);
+                Alert.alert('Friend Added', `You are now friends with ${request.fromUserName}.`);
                 loadData();
             }
         } catch (error) {
@@ -155,7 +155,7 @@ export default function FriendsScreen() {
                 friend.id,
                 type
             );
-            Alert.alert('Sent! 💪', `You sent a ${type} to ${friend.name}!`);
+            Alert.alert('Encouragement Sent', `You sent a ${type} to ${friend.name}!`);
         } catch (error) {
             Alert.alert('Error', 'Could not send encouragement.');
         }
@@ -182,7 +182,8 @@ export default function FriendsScreen() {
             >
                 {/* Add Friend Button */}
                 <Button
-                    title="➕ Add Friend"
+                    title="Add Friend"
+                    icon={<Ionicons name="person-add-outline" size={20} color="#FFF" />}
                     variant="primary"
                     fullWidth
                     onPress={() => setShowAddModal(true)}
@@ -269,7 +270,7 @@ export default function FriendsScreen() {
                                         {friend.name}
                                     </Text>
                                     <View style={styles.streakRow}>
-                                        <Text style={styles.streakIcon}>🔥</Text>
+                                        <Ionicons name="flame" size={14} color={Colors.secondary[500]} style={{ marginRight: 4 }} />
                                         <Text style={[styles.streakText, { color: theme.textSecondary }]}>
                                             {friend.streak} day streak
                                         </Text>
@@ -280,13 +281,13 @@ export default function FriendsScreen() {
                                         style={styles.encourageBtn}
                                         onPress={() => handleSendEncouragement(friend, 'cheer')}
                                     >
-                                        <Text style={styles.encourageIcon}>🎉</Text>
+                                        <Ionicons name="happy-outline" size={20} color={Colors.primary[600]} />
                                     </TouchableOpacity>
                                     <TouchableOpacity
                                         style={styles.encourageBtn}
                                         onPress={() => handleSendEncouragement(friend, 'high-five')}
                                     >
-                                        <Text style={styles.encourageIcon}>🙌</Text>
+                                        <Ionicons name="hand-left-outline" size={20} color={Colors.tertiary[600]} />
                                     </TouchableOpacity>
                                 </View>
                             </TouchableOpacity>

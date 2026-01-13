@@ -40,41 +40,41 @@ interface DayInfo {
 const FLOW_OPTIONS = ['Spotting', 'Light', 'Medium', 'Heavy'];
 const SYMPTOM_OPTIONS = ['Cramps', 'Headache', 'Bloating', 'Fatigue', 'Acne', 'Mood Swings', 'Backache', 'Nausea'];
 
-const phaseDescriptions: Record<CyclePhase, { title: string; tips: string[] }> = {
+const phaseDescriptions: Record<CyclePhase, { title: string; tips: { text: string; icon: keyof typeof Ionicons.glyphMap; color?: string }[] }> = {
     menstrual: {
         title: 'Menstrual Phase (Days 1-5)',
         tips: [
-            '🍫 Cravings are normal - opt for dark chocolate',
-            '🥗 Focus on iron-rich foods (spinach, lentils)',
-            '🧘 Gentle movement like yoga or walking',
-            '💧 Stay hydrated to reduce bloating',
+            { text: 'Cravings are normal - opt for dark chocolate', icon: 'cafe-outline', color: Colors.cyclePhases.menstrual },
+            { text: 'Focus on iron-rich foods (spinach, lentils)', icon: 'leaf-outline', color: Colors.cyclePhases.menstrual },
+            { text: 'Gentle movement like yoga or walking', icon: 'body-outline', color: Colors.cyclePhases.menstrual },
+            { text: 'Stay hydrated to reduce bloating', icon: 'water-outline', color: Colors.cyclePhases.menstrual },
         ],
     },
     follicular: {
         title: 'Follicular Phase (Days 6-14)',
         tips: [
-            '🏃‍♀️ Great time for intense workouts',
-            '🥬 Load up on fresh vegetables',
-            '🍳 Increase protein intake',
-            '⚡ Energy is rising - try new activities!',
+            { text: 'Great time for intense workouts', icon: 'barbell-outline', color: Colors.cyclePhases.follicular },
+            { text: 'Load up on fresh vegetables', icon: 'nutrition-outline', color: Colors.cyclePhases.follicular },
+            { text: 'Increase protein intake', icon: 'restaurant-outline', color: Colors.cyclePhases.follicular },
+            { text: 'Energy is rising - try new activities!', icon: 'flash-outline', color: Colors.cyclePhases.follicular },
         ],
     },
     ovulatory: {
         title: 'Ovulatory Phase (Days 15-17)',
         tips: [
-            '💪 Peak energy for high-intensity training',
-            '🥑 Focus on fiber-rich foods',
-            '🍓 Antioxidant-rich fruits are ideal',
-            '🎯 Best time for challenging goals',
+            { text: 'Peak energy for high-intensity training', icon: 'flame-outline', color: Colors.cyclePhases.ovulatory },
+            { text: 'Focus on fiber-rich foods', icon: 'leaf-outline', color: Colors.cyclePhases.ovulatory },
+            { text: 'Antioxidant-rich fruits are ideal', icon: 'nutrition-outline', color: Colors.cyclePhases.ovulatory },
+            { text: 'Best time for challenging goals', icon: 'trophy-outline', color: Colors.cyclePhases.ovulatory },
         ],
     },
     luteal: {
         title: 'Luteal Phase (Days 18-28)',
         tips: [
-            '🍠 Complex carbs help with cravings',
-            '🌰 Magnesium-rich foods (nuts, seeds)',
-            '😴 Prioritize sleep and rest',
-            '🏊 Low-impact exercise is best',
+            { text: 'Complex carbs help with cravings', icon: 'pizza-outline', color: Colors.cyclePhases.luteal },
+            { text: 'Magnesium-rich foods (nuts, seeds)', icon: 'fish-outline', color: Colors.cyclePhases.luteal },
+            { text: 'Prioritize sleep and rest', icon: 'moon-outline', color: Colors.cyclePhases.luteal },
+            { text: 'Low-impact exercise is best', icon: 'bicycle-outline', color: Colors.cyclePhases.luteal },
         ],
     },
 };
@@ -363,7 +363,8 @@ export default function CycleScreen() {
 
                 {/* Log Period Button - changed to generic log prompt */}
                 <Button
-                    title="📝 Log Today's Symptoms"
+                    title="Log Today's Symptoms"
+                    icon={<Ionicons name="create-outline" size={20} color="#FFF" />}
                     onPress={() => openLogModal(today.getDate())}
                     variant="primary"
                     fullWidth
@@ -408,9 +409,14 @@ export default function CycleScreen() {
 
                 <Card style={styles.tipsCard}>
                     {phaseInfo.tips.map((tip, index) => (
-                        <Text key={index} style={[styles.tip, { color: theme.textSecondary }]}>
-                            {tip}
-                        </Text>
+                        <View key={index} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm }}>
+                            <View style={{ width: 32, alignItems: 'center', marginRight: spacing.sm }}>
+                                <Ionicons name={tip.icon} size={20} color={tip.color} />
+                            </View>
+                            <Text style={[styles.tip, { color: theme.textSecondary, marginBottom: 0, flex: 1 }]}>
+                                {tip.text}
+                            </Text>
+                        </View>
                     ))}
                 </Card>
 

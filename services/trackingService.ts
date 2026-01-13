@@ -15,7 +15,7 @@ export interface MealLog {
     mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack';
     plannedMeal?: Meal;
     actualMeal: NutritionInfo;
-    matchScore: number; // 0-100
+    matchScore: number | null; // 0-100, or null if no plan
     feedback: string;
 }
 
@@ -51,10 +51,10 @@ class TrackingService {
     /**
      * Compare a scanned meal to a planned meal and generate a match score
      */
-    compareMealToPlan(actual: NutritionInfo, planned?: Meal): { score: number; feedback: string } {
+    compareMealToPlan(actual: NutritionInfo, planned?: Meal): { score: number | null; feedback: string } {
         if (!planned) {
             return {
-                score: 100,
+                score: null,
                 feedback: 'Meal logged (no plan for this slot).',
             };
         }
@@ -154,7 +154,7 @@ class TrackingService {
                     mealType, // Use specific type
                     undefined,
                     planned,
-                    score,
+                    score ?? undefined,
                     feedback
                 );
                 console.log('Successfully dual-logged to meals with ID:', mainDocId);
@@ -350,9 +350,14 @@ class TrackingService {
             let totalProtein = 0;
             let mealsCount = 0;
 
+            let scoredMealsCount = 0;
+
             mealsSnap.forEach(doc => {
                 const data = doc.data() as MealLog;
-                totalScore += data.matchScore || 0;
+                if (data.matchScore !== null && data.matchScore !== undefined) {
+                    totalScore += data.matchScore;
+                    scoredMealsCount++;
+                }
                 totalCals += data.actualMeal.calories;
                 totalProtein += data.actualMeal.protein;
                 mealsCount++;
@@ -399,7 +404,7 @@ class TrackingService {
             }
 
             // Adherence
-            const adherenceScore = mealsCount > 0 ? Math.round(totalScore / mealsCount) : 0;
+            const adherenceScore = scoredMealsCount > 0 ? Math.round(totalScore / scoredMealsCount) : 0;
             if (adherenceScore > 80) insights.push("You're sticking to your meal plan excellently!");
             else if (adherenceScore > 50) insights.push("Good effort on the meal plan. Try to match planned meals more closely.");
             else if (mealsCount > 0) insights.push("You're deviating from the plan often. Consider adjusting preferences.");

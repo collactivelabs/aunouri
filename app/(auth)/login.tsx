@@ -9,6 +9,7 @@ import { Colors } from '@/constants/Colors';
 import { borderRadius, spacing } from '@/constants/Layout';
 import { Typography } from '@/constants/Typography';
 import { useAuth } from '@/contexts/AuthContext';
+import { Ionicons } from '@expo/vector-icons';
 import { Link, router } from 'expo-router';
 import React, { useState } from 'react';
 import {
@@ -85,7 +86,9 @@ export default function LoginScreen() {
                 <View style={styles.content}>
                     {/* Logo/Brand */}
                     <View style={styles.header}>
-                        <Text style={styles.logo}>🌸</Text>
+                        <View style={[styles.logoContainer, { backgroundColor: Colors.primary[500] + '20' }]}>
+                            <Ionicons name="flower-outline" size={48} color={Colors.primary[500]} />
+                        </View>
                         <Text style={[styles.title, { color: theme.text }]}>AuNouri</Text>
                         <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
                             Nourish your body, honor your cycle
@@ -148,7 +151,7 @@ export default function LoginScreen() {
                             onPress={handleAppleLogin}
                             disabled={loading}
                         >
-                            <Text style={styles.socialIcon}>🍎</Text>
+                            <Ionicons name="logo-apple" size={24} color={theme.text} />
                             <Text style={[styles.socialText, { color: theme.text }]}>Apple</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
@@ -156,7 +159,7 @@ export default function LoginScreen() {
                             onPress={handleGoogleLogin}
                             disabled={loading}
                         >
-                            <Text style={styles.socialIcon}>G</Text>
+                            <Ionicons name="logo-google" size={24} color={theme.text} />
                             <Text style={[styles.socialText, { color: theme.text }]}>Google</Text>
                         </TouchableOpacity>
                     </View>
@@ -183,7 +186,15 @@ const styles = StyleSheet.create({
     keyboardView: { flex: 1 },
     content: { flex: 1, padding: spacing.lg, justifyContent: 'center' },
     header: { alignItems: 'center', marginBottom: spacing['2xl'] },
-    logo: { fontSize: 64, marginBottom: spacing.md },
+    logoContainer: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: spacing.md,
+    },
+    // logo: { fontSize: 64, marginBottom: spacing.md },
     title: { ...Typography.h1, marginBottom: spacing.xs },
     subtitle: { ...Typography.body, textAlign: 'center' },
     form: { marginBottom: spacing.xl },
@@ -212,7 +223,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         gap: spacing.sm,
     },
-    socialIcon: { fontSize: 20 },
+    // socialIcon: { fontSize: 20 },
     socialText: { ...Typography.button },
     signupContainer: { flexDirection: 'row', justifyContent: 'center' },
     signupText: { ...Typography.body },

@@ -121,13 +121,13 @@ export default function MealHistoryScreen() {
         return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
     };
 
-    const getMealIcon = (mealType: string) => {
+    const getMealIcon = (mealType: string): keyof typeof Ionicons.glyphMap => {
         switch (mealType) {
-            case 'breakfast': return '🌅';
-            case 'lunch': return '☀️';
-            case 'dinner': return '🌙';
-            case 'snack': return '🍎';
-            default: return '🍽️';
+            case 'breakfast': return 'sunny-outline';
+            case 'lunch': return 'restaurant-outline';
+            case 'dinner': return 'moon-outline';
+            case 'snack': return 'cafe-outline';
+            default: return 'fast-food-outline';
         }
     };
 
@@ -237,7 +237,7 @@ export default function MealHistoryScreen() {
                                         })}
                                         onLongPress={() => handleDeleteMeal(meal)}
                                     >
-                                        <Text style={styles.mealIcon}>{getMealIcon(meal.mealType)}</Text>
+                                        <Ionicons name={getMealIcon(meal.mealType)} size={24} color={Colors.primary[500]} style={{ marginRight: spacing.md }} />
                                         <View style={styles.mealInfo}>
                                             <Text style={[styles.mealType, { color: theme.text }]}>
                                                 {meal.mealType.charAt(0).toUpperCase() + meal.mealType.slice(1)}

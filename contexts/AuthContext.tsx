@@ -75,6 +75,7 @@ interface UserProfile {
 
     // Settings
     notificationsEnabled?: boolean;
+    weightReminderEnabled?: boolean;
     onboardingCompleted?: boolean;
 }
 

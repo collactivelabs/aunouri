@@ -69,8 +69,10 @@ export default function Step5Diabetic() {
                 </View>
 
                 {/* Header */}
-                <View style={styles.header}>
-                    <Text style={styles.emoji}>💊</Text>
+                <View style={[styles.header, { marginBottom: spacing.xl }]}>
+                    <View style={[styles.iconContainer, { backgroundColor: Colors.secondary[500] + '20' }]}>
+                        <Ionicons name="medical-outline" size={32} color={Colors.secondary[500]} />
+                    </View>
                     <Text style={[styles.title, { color: theme.text }]}>
                         Diabetes check
                     </Text>
@@ -88,7 +90,7 @@ export default function Step5Diabetic() {
                                 diabetesStatus === 'yes' && styles.optionSelected,
                             ]}
                         >
-                            <Text style={styles.optionIcon}>✅</Text>
+                            <Ionicons name="checkmark-circle-outline" size={32} color={Colors.primary[500]} style={{ marginRight: spacing.md }} />
                             <View style={styles.optionContent}>
                                 <Text style={[styles.optionTitle, { color: theme.text }]}>
                                     Yes, I have diabetes
@@ -110,7 +112,7 @@ export default function Step5Diabetic() {
                                 diabetesStatus === 'prediabetic' && styles.optionSelected,
                             ]}
                         >
-                            <Text style={styles.optionIcon}>⚠️</Text>
+                            <Ionicons name="warning-outline" size={32} color={Colors.secondary[500]} style={{ marginRight: spacing.md }} />
                             <View style={styles.optionContent}>
                                 <Text style={[styles.optionTitle, { color: theme.text }]}>
                                     I'm pre-diabetic
@@ -132,7 +134,7 @@ export default function Step5Diabetic() {
                                 diabetesStatus === 'no' && styles.optionSelected,
                             ]}
                         >
-                            <Text style={styles.optionIcon}>❌</Text>
+                            <Ionicons name="close-circle-outline" size={32} color={theme.textMuted} style={{ marginRight: spacing.md }} />
                             <View style={styles.optionContent}>
                                 <Text style={[styles.optionTitle, { color: theme.text }]}>
                                     No, I don't have diabetes
@@ -280,7 +282,15 @@ const styles = StyleSheet.create({
 
     // Header
     header: { alignItems: 'center', marginBottom: spacing.xl },
-    emoji: { fontSize: 48, marginBottom: spacing.md },
+    iconContainer: {
+        width: 64,
+        height: 64,
+        borderRadius: 32,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: spacing.md,
+    },
+    // emoji: { fontSize: 48, marginBottom: spacing.md },
     title: { ...Typography.h2, textAlign: 'center', marginBottom: spacing.sm },
     subtitle: { ...Typography.body, textAlign: 'center' },
 
@@ -295,7 +305,7 @@ const styles = StyleSheet.create({
         borderWidth: 2,
         borderColor: Colors.primary[500],
     },
-    optionIcon: { fontSize: 28, marginRight: spacing.md },
+    // optionIcon: { fontSize: 28, marginRight: spacing.md },
     optionContent: { flex: 1 },
     optionTitle: { ...Typography.body, fontWeight: '600' },
     optionDesc: { ...Typography.caption },

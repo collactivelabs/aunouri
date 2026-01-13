@@ -232,8 +232,9 @@ export default function CameraScreen() {
 
                 {isAnalyzing ? (
                     <Card style={styles.loadingCard}>
+                        <Ionicons name="search-outline" size={32} color={Colors.primary[500]} style={{ marginBottom: spacing.md }} />
                         <Text style={[styles.loadingText, { color: theme.text }]}>
-                            🔍 Identifying foods...
+                            Identifying foods...
                         </Text>
                         <Text style={[styles.loadingSubtext, { color: theme.textSecondary }]}>
                             AI is analyzing your meal
@@ -317,9 +318,12 @@ export default function CameraScreen() {
                                     {alternative && (
                                         <View style={[styles.alternativeBox, { backgroundColor: Colors.tertiary[500] + '15' }]}>
                                             <View style={styles.alternativeHeader}>
-                                                <Text style={[styles.alternativeLabel, { color: Colors.tertiary[600] }]}>
-                                                    💡 Healthier swap
-                                                </Text>
+                                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                                                    <Ionicons name="bulb-outline" size={16} color={Colors.tertiary[600]} />
+                                                    <Text style={[styles.alternativeLabel, { color: Colors.tertiary[600] }]}>
+                                                        Healthier swap
+                                                    </Text>
+                                                </View>
                                                 <Text style={[styles.savingsLabel, { color: Colors.tertiary[600] }]}>
                                                     Save {alternative.caloriesSaved} cal
                                                 </Text>

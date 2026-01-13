@@ -10,6 +10,7 @@ import { borderRadius, spacing } from '@/constants/Layout';
 import { Typography } from '@/constants/Typography';
 import { useAuth } from '@/contexts/AuthContext';
 import { CycleInfo, CyclePhase, cycleService } from '@/services/cycle';
+import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useState } from 'react';
 import {
@@ -36,40 +37,40 @@ interface Recommendation {
 
 const phaseRecommendations: Record<CyclePhase, Recommendation[]> = {
     menstrual: [
-        { id: '1', icon: '🍫', title: 'Dark Chocolate', description: 'Satisfies cravings with magnesium boost', category: 'nutrition', diabeticFriendly: false },
-        { id: '2', icon: '🥬', title: 'Iron-Rich Foods', description: 'Spinach, lentils, beans to replenish', category: 'nutrition', diabeticFriendly: true },
-        { id: '2b', icon: '🥩', title: 'Red Meat for Iron', description: 'Beef or lamb to replenish iron', category: 'nutrition', excludeFor: ['vegetarian', 'vegan', 'pescatarian'], diabeticFriendly: true },
-        { id: '3', icon: '🧘', title: 'Gentle Yoga', description: 'Restorative poses for cramps and relaxation', category: 'exercise' },
-        { id: '4', icon: '💧', title: 'Hydration Focus', description: 'Extra water helps reduce bloating', category: 'wellness' },
-        { id: '5', icon: '😴', title: 'Rest Priority', description: 'Your body is working hard - rest more', category: 'wellness' },
-        { id: '6', icon: '🍵', title: 'Warm Beverages', description: 'Herbal teas soothe and comfort', category: 'nutrition', diabeticFriendly: true },
+        { id: '1', icon: 'nutrition-outline', title: 'Dark Chocolate', description: 'Satisfies cravings with magnesium boost', category: 'nutrition', diabeticFriendly: false },
+        { id: '2', icon: 'leaf-outline', title: 'Iron-Rich Foods', description: 'Spinach, lentils, beans to replenish', category: 'nutrition', diabeticFriendly: true },
+        { id: '2b', icon: 'restaurant-outline', title: 'Red Meat for Iron', description: 'Beef or lamb to replenish iron', category: 'nutrition', excludeFor: ['vegetarian', 'vegan', 'pescatarian'], diabeticFriendly: true },
+        { id: '3', icon: 'body-outline', title: 'Gentle Yoga', description: 'Restorative poses for cramps and relaxation', category: 'exercise' },
+        { id: '4', icon: 'water-outline', title: 'Hydration Focus', description: 'Extra water helps reduce bloating', category: 'wellness' },
+        { id: '5', icon: 'moon-outline', title: 'Rest Priority', description: 'Your body is working hard - rest more', category: 'wellness' },
+        { id: '6', icon: 'cafe-outline', title: 'Warm Beverages', description: 'Herbal teas soothe and comfort', category: 'nutrition', diabeticFriendly: true },
     ],
     follicular: [
-        { id: '1', icon: '🏃‍♀️', title: 'High-Intensity Training', description: 'Energy is rising - push yourself!', category: 'exercise' },
-        { id: '2', icon: '🥚', title: 'Protein Focus (Eggs)', description: 'Build muscle with eggs and dairy', category: 'nutrition', excludeFor: ['vegan'], diabeticFriendly: true },
-        { id: '2b', icon: '🌱', title: 'Plant Protein Power', description: 'Tofu, tempeh, legumes for muscle', category: 'nutrition', diabeticFriendly: true },
-        { id: '2c', icon: '🐟', title: 'Lean Fish Protein', description: 'Salmon, tuna for omega-3s', category: 'nutrition', excludeFor: ['vegetarian', 'vegan'], diabeticFriendly: true },
-        { id: '3', icon: '🥗', title: 'Fresh Vegetables', description: 'Load up on greens and fiber', category: 'nutrition', diabeticFriendly: true },
-        { id: '4', icon: '⏰', title: 'Try Intermittent Fasting', description: '16:8 works well in this phase', category: 'fasting' },
-        { id: '5', icon: '🎯', title: 'New Challenges', description: 'Great time to start new projects', category: 'wellness' },
-        { id: '6', icon: '💪', title: 'Strength Training', description: 'Optimal time for building muscle', category: 'exercise' },
+        { id: '1', icon: 'flame-outline', title: 'High-Intensity Training', description: 'Energy is rising - push yourself!', category: 'exercise' },
+        { id: '2', icon: 'egg-outline', title: 'Protein Focus (Eggs)', description: 'Build muscle with eggs and dairy', category: 'nutrition', excludeFor: ['vegan'], diabeticFriendly: true },
+        { id: '2b', icon: 'leaf-outline', title: 'Plant Protein Power', description: 'Tofu, tempeh, legumes for muscle', category: 'nutrition', diabeticFriendly: true },
+        { id: '2c', icon: 'fish-outline', title: 'Lean Fish Protein', description: 'Salmon, tuna for omega-3s', category: 'nutrition', excludeFor: ['vegetarian', 'vegan'], diabeticFriendly: true },
+        { id: '3', icon: 'nutrition-outline', title: 'Fresh Vegetables', description: 'Load up on greens and fiber', category: 'nutrition', diabeticFriendly: true },
+        { id: '4', icon: 'time-outline', title: 'Try Intermittent Fasting', description: '16:8 works well in this phase', category: 'fasting' },
+        { id: '5', icon: 'rocket-outline', title: 'New Challenges', description: 'Great time to start new projects', category: 'wellness' },
+        { id: '6', icon: 'barbell-outline', title: 'Strength Training', description: 'Optimal time for building muscle', category: 'exercise' },
     ],
     ovulatory: [
-        { id: '1', icon: '💪', title: 'Peak Performance', description: 'Go for your personal bests!', category: 'exercise' },
-        { id: '2', icon: '🥑', title: 'Fiber & Healthy Fats', description: 'Support hormone balance', category: 'nutrition', diabeticFriendly: true },
-        { id: '3', icon: '🍓', title: 'Antioxidant Fruits', description: 'Berries, citrus for vitality', category: 'nutrition', diabeticFriendly: true },
-        { id: '4', icon: '🗣️', title: 'Social Activities', description: 'Communication peaks - great for meetings', category: 'wellness' },
-        { id: '5', icon: '🏋️', title: 'HIIT Workouts', description: 'Maximum calorie burn window', category: 'exercise' },
-        { id: '6', icon: '⏰', title: 'Extended Fasting OK', description: 'Body handles longer fasts well', category: 'fasting' },
+        { id: '1', icon: 'trophy-outline', title: 'Peak Performance', description: 'Go for your personal bests!', category: 'exercise' },
+        { id: '2', icon: 'heart-outline', title: 'Fiber & Healthy Fats', description: 'Support hormone balance', category: 'nutrition', diabeticFriendly: true },
+        { id: '3', icon: 'nutrition-outline', title: 'Antioxidant Fruits', description: 'Berries, citrus for vitality', category: 'nutrition', diabeticFriendly: true },
+        { id: '4', icon: 'people-outline', title: 'Social Activities', description: 'Communication peaks - great for meetings', category: 'wellness' },
+        { id: '5', icon: 'stopwatch-outline', title: 'HIIT Workouts', description: 'Maximum calorie burn window', category: 'exercise' },
+        { id: '6', icon: 'time-outline', title: 'Extended Fasting OK', description: 'Body handles longer fasts well', category: 'fasting' },
     ],
     luteal: [
-        { id: '1', icon: '🍠', title: 'Complex Carbs', description: 'Sweet potato, quinoa for cravings', category: 'nutrition', diabeticFriendly: false },
-        { id: '1b', icon: '🥦', title: 'Low-Carb Veggies', description: 'Broccoli, cauliflower for fullness', category: 'nutrition', diabeticFriendly: true },
-        { id: '2', icon: '🌰', title: 'Magnesium Foods', description: 'Nuts, seeds, dark chocolate', category: 'nutrition', diabeticFriendly: true },
-        { id: '3', icon: '🏊', title: 'Low-Impact Exercise', description: 'Swimming, walking, pilates', category: 'exercise' },
-        { id: '4', icon: '😴', title: 'Extra Sleep', description: 'Body needs more rest before period', category: 'wellness' },
-        { id: '5', icon: '🧘', title: 'Stress Management', description: 'Meditation and deep breathing', category: 'wellness' },
-        { id: '6', icon: '⏰', title: 'Shorter Fasting Windows', description: 'Stick to 12-14 hour fasts', category: 'fasting' },
+        { id: '1', icon: 'pizza-outline', title: 'Complex Carbs', description: 'Sweet potato, quinoa for cravings', category: 'nutrition', diabeticFriendly: false },
+        { id: '1b', icon: 'leaf-outline', title: 'Low-Carb Veggies', description: 'Broccoli, cauliflower for fullness', category: 'nutrition', diabeticFriendly: true },
+        { id: '2', icon: 'happy-outline', title: 'Magnesium Foods', description: 'Nuts, seeds, dark chocolate', category: 'nutrition', diabeticFriendly: true },
+        { id: '3', icon: 'water-outline', title: 'Low-Impact Exercise', description: 'Swimming, walking, pilates', category: 'exercise' },
+        { id: '4', icon: 'bed-outline', title: 'Extra Sleep', description: 'Body needs more rest before period', category: 'wellness' },
+        { id: '5', icon: 'flower-outline', title: 'Stress Management', description: 'Meditation and deep breathing', category: 'wellness' },
+        { id: '6', icon: 'timer-outline', title: 'Shorter Fasting Windows', description: 'Stick to 12-14 hour fasts', category: 'fasting' },
     ],
 };
 
@@ -224,7 +225,7 @@ export default function RecommendationsScreen() {
                     <Card key={rec.id} style={styles.recCard}>
                         <View style={styles.recRow}>
                             <View style={[styles.recIcon, { backgroundColor: categoryColors[rec.category] + '20' }]}>
-                                <Text style={styles.recEmoji}>{rec.icon}</Text>
+                                <Ionicons name={rec.icon as any} size={24} color={categoryColors[rec.category]} />
                             </View>
                             <View style={styles.recContent}>
                                 <Text style={[styles.recTitle, { color: theme.text }]}>{rec.title}</Text>
@@ -271,7 +272,7 @@ const styles = StyleSheet.create({
     recCard: { marginBottom: spacing.sm },
     recRow: { flexDirection: 'row', alignItems: 'center' },
     recIcon: { width: 48, height: 48, borderRadius: borderRadius.md, alignItems: 'center', justifyContent: 'center' },
-    recEmoji: { fontSize: 24 },
+
     recContent: { flex: 1, marginLeft: spacing.md },
     recTitle: { ...Typography.body, fontWeight: '600' },
     recDesc: { ...Typography.caption },

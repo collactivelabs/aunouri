@@ -30,23 +30,23 @@ interface DietOption {
 }
 
 const DIET_OPTIONS: DietOption[] = [
-    { id: 'vegetarian', icon: '🥬', label: 'Vegetarian' },
-    { id: 'vegan', icon: '🌱', label: 'Vegan' },
-    { id: 'pescatarian', icon: '🐟', label: 'Pescatarian' },
-    { id: 'keto', icon: '🥑', label: 'Keto' },
-    { id: 'paleo', icon: '🥩', label: 'Paleo' },
-    { id: 'gluten_free', icon: '🌾', label: 'Gluten-Free' },
-    { id: 'dairy_free', icon: '🥛', label: 'Dairy-Free' },
-    { id: 'halal', icon: '☪️', label: 'Halal' },
-    { id: 'kosher', icon: '✡️', label: 'Kosher' },
+    { id: 'vegetarian', icon: 'leaf-outline', label: 'Vegetarian' },
+    { id: 'vegan', icon: 'flower-outline', label: 'Vegan' },
+    { id: 'pescatarian', icon: 'fish-outline', label: 'Pescatarian' },
+    { id: 'keto', icon: 'flash-outline', label: 'Keto' },
+    { id: 'paleo', icon: 'bonfire-outline', label: 'Paleo' },
+    { id: 'gluten_free', icon: 'body-outline', label: 'Gluten-Free' },
+    { id: 'dairy_free', icon: 'water-outline', label: 'Dairy-Free' },
+    { id: 'halal', icon: 'moon-outline', label: 'Halal' },
+    { id: 'kosher', icon: 'star-outline', label: 'Kosher' },
 ];
 
 const ALLERGY_OPTIONS: DietOption[] = [
-    { id: 'nuts', icon: '🥜', label: 'Nuts' },
-    { id: 'shellfish', icon: '🦐', label: 'Shellfish' },
-    { id: 'eggs', icon: '🥚', label: 'Eggs' },
-    { id: 'soy', icon: '🫛', label: 'Soy' },
-    { id: 'wheat', icon: '🌾', label: 'Wheat' },
+    { id: 'nuts', icon: 'alert-circle-outline', label: 'Nuts' },
+    { id: 'shellfish', icon: 'boat-outline', label: 'Shellfish' },
+    { id: 'eggs', icon: 'egg-outline', label: 'Eggs' },
+    { id: 'soy', icon: 'cube-outline', label: 'Soy' },
+    { id: 'wheat', icon: 'pizza-outline', label: 'Wheat' },
 ];
 
 export default function Step6Diet() {
@@ -135,8 +135,10 @@ export default function Step6Diet() {
                 </View>
 
                 {/* Header */}
-                <View style={styles.header}>
-                    <Text style={styles.emoji}>🍽️</Text>
+                <View style={[styles.header, { marginBottom: spacing.xl }]}>
+                    <View style={[styles.iconContainer, { backgroundColor: Colors.primary[500] + '20' }]}>
+                        <Ionicons name="restaurant-outline" size={32} color={Colors.primary[500]} />
+                    </View>
                     <Text style={[styles.title, { color: theme.text }]}>
                         Dietary & Meal Preferences
                     </Text>
@@ -173,7 +175,7 @@ export default function Step6Diet() {
                             ]}
                             onPress={() => toggleDiet(option.id)}
                         >
-                            <Text style={styles.chipIcon}>{option.icon}</Text>
+                            <Ionicons name={option.icon as any} size={18} color={dietaryPrefs.includes(option.id) ? Colors.primary[500] : theme.text} />
                             <Text
                                 style={[
                                     styles.chipLabel,
@@ -201,7 +203,7 @@ export default function Step6Diet() {
                             ]}
                             onPress={() => toggleAllergy(option.id)}
                         >
-                            <Text style={styles.chipIcon}>{option.icon}</Text>
+                            <Ionicons name={option.icon as any} size={18} color={allergies.includes(option.id) ? Colors.tertiary[500] : theme.text} />
                             <Text
                                 style={[
                                     styles.chipLabel,
@@ -299,7 +301,15 @@ const styles = StyleSheet.create({
 
     // Header
     header: { alignItems: 'center', marginBottom: spacing.xl },
-    emoji: { fontSize: 48, marginBottom: spacing.md },
+    iconContainer: {
+        width: 64,
+        height: 64,
+        borderRadius: 32,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: spacing.md,
+    },
+    // emoji: { fontSize: 48, marginBottom: spacing.md },
     title: { ...Typography.h2, textAlign: 'center', marginBottom: spacing.sm },
     subtitle: { ...Typography.body, textAlign: 'center' },
 
@@ -331,7 +341,7 @@ const styles = StyleSheet.create({
     chipSelected: {
         backgroundColor: Colors.primary[500] + '10',
     },
-    chipIcon: { fontSize: 16 },
+    // chipIcon: { fontSize: 16 },
     chipLabel: { ...Typography.caption, fontWeight: '500' },
 
     // Footer

@@ -183,7 +183,22 @@ export default function MealPlansScreen() {
                                         { color: viewMode === mode ? '#FFF' : theme.text },
                                     ]}
                                 >
-                                    {mode === 'plan' ? '📅 Plan' : mode === 'shopping' ? '🛒 Shopping' : '❤️ Favorites'}
+                                    {mode === 'plan' ? (
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                                            <Ionicons name="calendar-outline" size={16} color={viewMode === mode ? '#FFF' : theme.text} />
+                                            <Text style={[styles.tabText, { color: viewMode === mode ? '#FFF' : theme.text }]}>Plan</Text>
+                                        </View>
+                                    ) : mode === 'shopping' ? (
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                                            <Ionicons name="cart-outline" size={16} color={viewMode === mode ? '#FFF' : theme.text} />
+                                            <Text style={[styles.tabText, { color: viewMode === mode ? '#FFF' : theme.text }]}>Shopping</Text>
+                                        </View>
+                                    ) : (
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                                            <Ionicons name="heart-outline" size={16} color={viewMode === mode ? '#FFF' : theme.text} />
+                                            <Text style={[styles.tabText, { color: viewMode === mode ? '#FFF' : theme.text }]}>Favorites</Text>
+                                        </View>
+                                    )}
                                 </Text>
                             </TouchableOpacity>
                         ))}
@@ -193,7 +208,7 @@ export default function MealPlansScreen() {
                 {/* No Plan State */}
                 {!activePlan && (
                     <Card style={styles.emptyCard}>
-                        <Text style={styles.emptyEmoji}>🍽️</Text>
+                        <Ionicons name="restaurant-outline" size={64} color={Colors.primary[300]} style={{ marginBottom: spacing.md }} />
                         <Text style={[styles.emptyTitle, { color: theme.text }]}>
                             No Active Meal Plan
                         </Text>
@@ -346,7 +361,7 @@ export default function MealPlansScreen() {
                                         <Card style={styles.exerciseCard}>
                                             <View style={styles.exerciseRow}>
                                                 <View style={[styles.exerciseIcon, { backgroundColor: Colors.tertiary[500] + '20' }]}>
-                                                    <Text style={styles.exerciseEmoji}>🏃‍♀️</Text>
+                                                    <Ionicons name="fitness-outline" size={24} color={Colors.tertiary[500]} />
                                                 </View>
                                                 <View style={styles.exerciseContent}>
                                                     <Text style={[styles.exerciseName, { color: theme.text }]}>
@@ -395,7 +410,7 @@ export default function MealPlansScreen() {
                         </Text>
                         {favorites.length === 0 ? (
                             <Card style={styles.emptyCard}>
-                                <Text style={styles.emptyEmoji}>❤️</Text>
+                                <Ionicons name="heart-outline" size={64} color={Colors.primary[300]} style={{ marginBottom: spacing.md }} />
                                 <Text style={[styles.emptyTitle, { color: theme.text }]}>
                                     No Favorites Yet
                                 </Text>
@@ -446,7 +461,10 @@ export default function MealPlansScreen() {
                             style={[styles.durationOption, { borderColor: theme.border }]}
                             onPress={() => handleGeneratePlan('1week')}
                         >
-                            <Text style={[styles.durationText, { color: theme.text }]}>📅 1 Week</Text>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                                <Ionicons name="calendar-outline" size={20} color={Colors.primary[500]} />
+                                <Text style={[styles.durationText, { color: theme.text }]}>1 Week</Text>
+                            </View>
                             <Text style={[styles.durationDesc, { color: theme.textSecondary }]}>7 days of meals</Text>
                         </TouchableOpacity>
 
@@ -454,7 +472,10 @@ export default function MealPlansScreen() {
                             style={[styles.durationOption, { borderColor: theme.border }]}
                             onPress={() => handleGeneratePlan('2weeks')}
                         >
-                            <Text style={[styles.durationText, { color: theme.text }]}>📆 2 Weeks</Text>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                                <Ionicons name="calendar-number-outline" size={20} color={Colors.primary[500]} />
+                                <Text style={[styles.durationText, { color: theme.text }]}>2 Weeks</Text>
+                            </View>
                             <Text style={[styles.durationDesc, { color: theme.textSecondary }]}>14 days of meals</Text>
                         </TouchableOpacity>
 
@@ -462,7 +483,10 @@ export default function MealPlansScreen() {
                             style={[styles.durationOption, { borderColor: theme.border }]}
                             onPress={() => handleGeneratePlan('4weeks')}
                         >
-                            <Text style={[styles.durationText, { color: theme.text }]}>🗓️ 4 Weeks</Text>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                                <Ionicons name="calendar-clear-outline" size={20} color={Colors.primary[500]} />
+                                <Text style={[styles.durationText, { color: theme.text }]}>4 Weeks</Text>
+                            </View>
                             <Text style={[styles.durationDesc, { color: theme.textSecondary }]}>28 days of meals</Text>
                         </TouchableOpacity>
 

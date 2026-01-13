@@ -32,31 +32,31 @@ interface ActivityOption {
 const ACTIVITY_OPTIONS: ActivityOption[] = [
     {
         value: 'sedentary',
-        icon: '🪑',
+        icon: 'cafe-outline',
         title: 'Sedentary',
         description: 'Little or no exercise, desk job',
     },
     {
         value: 'light',
-        icon: '🚶',
+        icon: 'walk-outline',
         title: 'Lightly Active',
         description: 'Light exercise 1-3 days/week',
     },
     {
         value: 'moderate',
-        icon: '🏃',
+        icon: 'bicycle-outline',
         title: 'Moderately Active',
         description: 'Moderate exercise 3-5 days/week',
     },
     {
         value: 'active',
-        icon: '💪',
+        icon: 'fitness-outline',
         title: 'Very Active',
         description: 'Hard exercise 6-7 days/week',
     },
     {
         value: 'very_active',
-        icon: '🏋️',
+        icon: 'flash-outline',
         title: 'Extremely Active',
         description: 'Very intense exercise or physical job',
     },
@@ -102,8 +102,10 @@ export default function Step2Activity() {
                 </View>
 
                 {/* Header */}
-                <View style={styles.header}>
-                    <Text style={styles.emoji}>🏃‍♀️</Text>
+                <View style={[styles.header, { marginBottom: spacing.xl }]}>
+                    <View style={[styles.iconContainer, { backgroundColor: Colors.primary[500] + '20' }]}>
+                        <Ionicons name="speedometer-outline" size={32} color={Colors.primary[500]} />
+                    </View>
                     <Text style={[styles.title, { color: theme.text }]}>
                         How active are you?
                     </Text>
@@ -125,7 +127,7 @@ export default function Step2Activity() {
                                     activityLevel === option.value && styles.optionSelected,
                                 ]}
                             >
-                                <Text style={styles.optionIcon}>{option.icon}</Text>
+                                <Ionicons name={option.icon as any} size={28} color={theme.text} style={{ marginRight: spacing.md }} />
                                 <View style={styles.optionContent}>
                                     <Text style={[styles.optionTitle, { color: theme.text }]}>
                                         {option.title}
@@ -183,7 +185,15 @@ const styles = StyleSheet.create({
 
     // Header
     header: { alignItems: 'center', marginBottom: spacing.xl },
-    emoji: { fontSize: 48, marginBottom: spacing.md },
+    iconContainer: {
+        width: 64,
+        height: 64,
+        borderRadius: 32,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: spacing.md,
+    },
+    // emoji: { fontSize: 48, marginBottom: spacing.md },
     title: { ...Typography.h2, textAlign: 'center', marginBottom: spacing.sm },
     subtitle: { ...Typography.body, textAlign: 'center' },
 
@@ -198,7 +208,7 @@ const styles = StyleSheet.create({
         borderWidth: 2,
         borderColor: Colors.primary[500],
     },
-    optionIcon: { fontSize: 32, marginRight: spacing.md },
+    // optionIcon: { fontSize: 32, marginRight: spacing.md },
     optionContent: { flex: 1 },
     optionTitle: { ...Typography.body, fontWeight: '600' },
     optionDesc: { ...Typography.caption },

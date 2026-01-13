@@ -73,8 +73,10 @@ export default function Step1Basics() {
                     </View>
 
                     {/* Header */}
-                    <View style={styles.header}>
-                        <Text style={styles.emoji}>👋</Text>
+                    <View style={[styles.header, { marginBottom: spacing.xl }]}>
+                        <View style={[styles.iconContainer, { backgroundColor: Colors.primary[500] + '20' }]}>
+                            <Ionicons name="hand-left-outline" size={32} color={Colors.primary[500]} />
+                        </View>
                         <Text style={[styles.title, { color: theme.text }]}>
                             Let's get to know you
                         </Text>
@@ -160,7 +162,7 @@ export default function Step1Basics() {
                                     ]}
                                     onPress={() => setSex('female')}
                                 >
-                                    <Text style={styles.sexIcon}>♀️</Text>
+                                    <Ionicons name="female-outline" size={24} color={sex === 'female' ? Colors.primary[500] : theme.text} />
                                     <Text style={[styles.sexLabel, { color: theme.text }]}>Female</Text>
                                     {sex === 'female' && (
                                         <Ionicons name="checkmark-circle" size={20} color={Colors.primary[500]} />
@@ -174,7 +176,7 @@ export default function Step1Basics() {
                                     ]}
                                     onPress={() => setSex('male')}
                                 >
-                                    <Text style={styles.sexIcon}>♂️</Text>
+                                    <Ionicons name="male-outline" size={24} color={sex === 'male' ? Colors.primary[500] : theme.text} />
                                     <Text style={[styles.sexLabel, { color: theme.text }]}>Male</Text>
                                     {sex === 'male' && (
                                         <Ionicons name="checkmark-circle" size={20} color={Colors.primary[500]} />
@@ -196,8 +198,8 @@ export default function Step1Basics() {
                         style={styles.nextButton}
                     />
                 </View>
-            </KeyboardAvoidingView>
-        </SafeAreaView>
+            </KeyboardAvoidingView >
+        </SafeAreaView >
     );
 }
 
@@ -224,7 +226,15 @@ const styles = StyleSheet.create({
 
     // Header
     header: { alignItems: 'center', marginBottom: spacing.xl },
-    emoji: { fontSize: 48, marginBottom: spacing.md },
+    iconContainer: {
+        width: 64,
+        height: 64,
+        borderRadius: 32,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: spacing.md,
+    },
+    // emoji: { fontSize: 48, marginBottom: spacing.md },
     title: { ...Typography.h2, textAlign: 'center', marginBottom: spacing.sm },
     subtitle: { ...Typography.body, textAlign: 'center' },
 
@@ -258,7 +268,7 @@ const styles = StyleSheet.create({
     sexOptionSelected: {
         backgroundColor: Colors.primary[500] + '10',
     },
-    sexIcon: { fontSize: 24 },
+    // sexIcon: { fontSize: 24 },
     sexLabel: { ...Typography.body, fontWeight: '500' },
 
     // Footer

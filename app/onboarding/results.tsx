@@ -84,7 +84,7 @@ export default function OnboardingResults() {
                         <Ionicons name="checkmark" size={48} color="#fff" />
                     </View>
                     <Text style={[styles.title, { color: theme.text }]}>
-                        Your plan is ready! 🎉
+                        Your plan is ready!
                     </Text>
                     <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
                         Based on your profile, here's your personalized nutrition goal
@@ -137,7 +137,7 @@ export default function OnboardingResults() {
                 {/* Features Unlock Card */}
                 <Card style={styles.unlockCard}>
                     <Text style={[styles.unlockTitle, { color: theme.text }]}>
-                        🔓 Create an account to unlock
+                        Create an account to unlock
                     </Text>
                     <View style={styles.featureList}>
                         <View style={styles.featureItem}>

@@ -125,6 +125,18 @@ class NotificationService {
     }
 
     /**
+     * Cancel weekly weight reminder
+     */
+    async cancelWeightReminder() {
+        const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+        for (const notif of scheduled) {
+            if (notif.content.data?.type === 'weight') {
+                await Notifications.cancelScheduledNotificationAsync(notif.identifier);
+            }
+        }
+    }
+
+    /**
      * Cancel all reminders
      */
     async cancelAllReminders() {

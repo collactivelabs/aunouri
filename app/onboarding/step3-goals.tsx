@@ -33,19 +33,19 @@ interface GoalOption {
 const GOAL_OPTIONS: GoalOption[] = [
     {
         value: 'lose',
-        icon: '📉',
+        icon: 'trending-down-outline',
         title: 'Lose Weight',
         description: 'Healthy weight loss at ~0.5kg/week',
     },
     {
         value: 'maintain',
-        icon: '⚖️',
+        icon: 'scale-outline',
         title: 'Maintain Weight',
         description: 'Keep your current weight stable',
     },
     {
         value: 'gain',
-        icon: '📈',
+        icon: 'trending-up-outline',
         title: 'Gain Weight',
         description: 'Build muscle at ~0.3kg/week',
     },
@@ -110,8 +110,10 @@ export default function Step3Goals() {
                 </View>
 
                 {/* Header */}
-                <View style={styles.header}>
-                    <Text style={styles.emoji}>🎯</Text>
+                <View style={[styles.header, { marginBottom: spacing.xl }]}>
+                    <View style={[styles.iconContainer, { backgroundColor: Colors.primary[500] + '20' }]}>
+                        <Ionicons name="trophy-outline" size={32} color={Colors.primary[500]} />
+                    </View>
                     <Text style={[styles.title, { color: theme.text }]}>
                         What's your goal?
                     </Text>
@@ -133,7 +135,7 @@ export default function Step3Goals() {
                                     goal === option.value && styles.optionSelected,
                                 ]}
                             >
-                                <Text style={styles.optionIcon}>{option.icon}</Text>
+                                <Ionicons name={option.icon as any} size={28} color={theme.text} style={{ marginRight: spacing.md }} />
                                 <View style={styles.optionContent}>
                                     <Text style={[styles.optionTitle, { color: theme.text }]}>
                                         {option.title}
@@ -222,7 +224,15 @@ const styles = StyleSheet.create({
 
     // Header
     header: { alignItems: 'center', marginBottom: spacing.xl },
-    emoji: { fontSize: 48, marginBottom: spacing.md },
+    iconContainer: {
+        width: 64,
+        height: 64,
+        borderRadius: 32,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: spacing.md,
+    },
+    // emoji: { fontSize: 48, marginBottom: spacing.md },
     title: { ...Typography.h2, textAlign: 'center', marginBottom: spacing.sm },
     subtitle: { ...Typography.body, textAlign: 'center' },
 
@@ -237,7 +247,7 @@ const styles = StyleSheet.create({
         borderWidth: 2,
         borderColor: Colors.primary[500],
     },
-    optionIcon: { fontSize: 32, marginRight: spacing.md },
+    // optionIcon: { fontSize: 32, marginRight: spacing.md },
     optionContent: { flex: 1 },
     optionTitle: { ...Typography.body, fontWeight: '600' },
     optionDesc: { ...Typography.caption },

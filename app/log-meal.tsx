@@ -14,6 +14,7 @@ import { Meal } from '@/services/anthropicService';
 import { FoodRecognitionResult, NutritionInfo } from '@/services/foodRecognition';
 import { mealPlanService } from '@/services/mealPlanService';
 import { trackingService } from '@/services/trackingService';
+import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
@@ -36,7 +37,7 @@ export default function LogMealScreen() {
     const [loading, setLoading] = useState(true);
     const [scannedData, setScannedData] = useState<FoodRecognitionResult | null>(null);
     const [plannedMeal, setPlannedMeal] = useState<Meal | undefined>(undefined);
-    const [matchResult, setMatchResult] = useState<{ score: number; feedback: string } | null>(null);
+    const [matchResult, setMatchResult] = useState<{ score: number | null; feedback: string } | null>(null);
     const [mealType, setMealType] = useState<'breakfast' | 'lunch' | 'dinner' | 'snack'>('snack');
 
     useEffect(() => {
@@ -158,7 +159,7 @@ export default function LogMealScreen() {
                 <Text style={[styles.title, { color: theme.text }]}>Meal Feedback</Text>
 
                 {/* Match Score Card */}
-                {matchResult && (
+                {matchResult && matchResult.score !== null ? (
                     <Card style={styles.scoreCard} variant="elevated">
                         <View style={styles.scoreHeader}>
                             <View style={[styles.scoreCircle, { borderColor: matchResult.score > 80 ? Colors.primary[500] : matchResult.score > 50 ? Colors.secondary[500] : '#EF4444' }]}>
@@ -166,16 +167,37 @@ export default function LogMealScreen() {
                                 <Text style={styles.scoreLabel}>Score</Text>
                             </View>
                             <View style={styles.feedbackContainer}>
-                                <Text style={[styles.feedbackTitle, { color: theme.text }]}>
-                                    {matchResult.score > 80 ? 'Excellent Match! 🎉' : matchResult.score > 50 ? 'Good Effort 👍' : 'Off Track ⚠️'}
-                                </Text>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                                    <Ionicons
+                                        name={matchResult.score > 80 ? 'trophy-outline' : matchResult.score > 50 ? 'thumbs-up-outline' : 'alert-circle-outline'}
+                                        size={20}
+                                        color={matchResult.score > 80 ? Colors.primary[500] : matchResult.score > 50 ? Colors.secondary[500] : '#EF4444'}
+                                    />
+                                    <Text style={[styles.feedbackTitle, { color: theme.text, marginBottom: 0 }]}>
+                                        {matchResult.score > 80 ? 'Excellent Match!' : matchResult.score > 50 ? 'Good Effort' : 'Off Track'}
+                                    </Text>
+                                </View>
                                 <Text style={[styles.feedbackText, { color: theme.textSecondary }]}>
                                     {matchResult.feedback}
                                 </Text>
                             </View>
                         </View>
                     </Card>
-                )}
+                ) : matchResult ? (
+                    <Card style={styles.scoreCard} variant="elevated">
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+                            <View style={[styles.scoreCircle, { borderColor: Colors.primary[500], borderStyle: 'dashed' }]}>
+                                <Ionicons name="checkmark" size={32} color={Colors.primary[500]} />
+                            </View>
+                            <View style={styles.feedbackContainer}>
+                                <Text style={[styles.feedbackTitle, { color: theme.text }]}>Meal Logged</Text>
+                                <Text style={[styles.feedbackText, { color: theme.textSecondary }]}>
+                                    {matchResult.feedback}
+                                </Text>
+                            </View>
+                        </View>
+                    </Card>
+                ) : null}
 
                 {/* Comparison Row */}
                 <View style={styles.comparisonContainer}>

@@ -33,7 +33,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface SettingItemProps {
-    icon: string;
+    icon: keyof typeof Ionicons.glyphMap;
     iconColor: string;
     title: string;
     subtitle?: string;
@@ -48,7 +48,7 @@ function SettingItem({ icon, iconColor, title, subtitle, isConnected, onPress }:
     return (
         <TouchableOpacity style={styles.settingItem} onPress={onPress}>
             <View style={[styles.settingIcon, { backgroundColor: iconColor + '15' }]}>
-                <Text style={{ fontSize: 20 }}>{icon}</Text>
+                <Ionicons name={icon} size={22} color={iconColor} />
             </View>
             <View style={styles.settingText}>
                 <Text style={[styles.settingTitle, { color: theme.text }]}>{title}</Text>
@@ -106,6 +106,7 @@ export default function ProfileScreen() {
 
     const [editName, setEditName] = useState('');
     const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+    const [weightReminderEnabled, setWeightReminderEnabled] = useState(true);
 
     // Refresh on focus
     useFocusEffect(
@@ -144,6 +145,9 @@ export default function ProfileScreen() {
             }
             if (userProfile?.notificationsEnabled !== undefined) {
                 setNotificationsEnabled(userProfile.notificationsEnabled);
+            }
+            if (userProfile?.weightReminderEnabled !== undefined) {
+                setWeightReminderEnabled(userProfile.weightReminderEnabled);
             }
 
             // Check health connection
@@ -251,10 +255,37 @@ export default function ProfileScreen() {
         const newValue = !notificationsEnabled;
         setNotificationsEnabled(newValue);
         updateUserProfile({ notificationsEnabled: newValue });
+
+        if (!newValue) {
+            notificationService.cancelAllReminders();
+        } else {
+            // Reschedule basics if re-enabling global notifications
+            if (userProfile?.mealTimes) {
+                notificationService.scheduleMealReminders(userProfile.mealTimes);
+            }
+            if (weightReminderEnabled) {
+                notificationService.scheduleWeightReminder();
+            }
+        }
+
         Alert.alert(
             newValue ? 'Notifications Enabled' : 'Notifications Disabled',
             newValue ? 'You will receive reminders and alerts.' : 'You will not receive notifications.'
         );
+    };
+
+    const handleWeightReminderToggle = async () => {
+        const newValue = !weightReminderEnabled;
+        setWeightReminderEnabled(newValue);
+        updateUserProfile({ weightReminderEnabled: newValue });
+
+        if (newValue) {
+            await notificationService.scheduleWeightReminder();
+            Alert.alert('Weigh-in Reminder Set', 'We will remind you every Monday morning.');
+        } else {
+            await notificationService.cancelWeightReminder();
+            Alert.alert('Reminder Cancelled', 'Weekly weigh-in reminder turned off.');
+        }
     };
 
     const handleAppearance = () => {
@@ -349,7 +380,7 @@ export default function ProfileScreen() {
                 <Card>
                     {Platform.OS === 'ios' && (
                         <SettingItem
-                            icon="❤️"
+                            icon="heart"
                             iconColor={Colors.secondary[500]}
                             title="Apple Health"
                             subtitle="Sync steps, activity & cycle data"
@@ -360,7 +391,7 @@ export default function ProfileScreen() {
                     {Platform.OS === 'android' && (
                         <>
                             <SettingItem
-                                icon="🏃"
+                                icon="fitness"
                                 iconColor={Colors.tertiary[500]}
                                 title="Google Fit"
                                 subtitle="Sync activity & fitness data"
@@ -368,7 +399,7 @@ export default function ProfileScreen() {
                                 onPress={() => connectHealthProvider('google')}
                             />
                             <SettingItem
-                                icon="⌚"
+                                icon="watch"
                                 iconColor={Colors.primary[500]}
                                 title="Samsung Health"
                                 subtitle="Sync from Galaxy devices"
@@ -383,28 +414,35 @@ export default function ProfileScreen() {
                 <Text style={[styles.sectionTitle, { color: theme.text }]}>Settings</Text>
                 <Card>
                     <SettingItem
-                        icon="🎯"
+                        icon="disc"
                         iconColor={Colors.primary[500]}
                         title="Goals"
                         subtitle={`Cals: ${calorieGoal} | Water: ${waterGoal}ml`}
                         onPress={() => setShowGoalsModal(true)}
                     />
                     <SettingItem
-                        icon="⏰"
+                        icon="time"
                         iconColor={Colors.tertiary[500]}
                         title="Meal Times"
                         subtitle="Customize reminder schedule"
                         onPress={() => setShowMealTimesModal(true)}
                     />
                     <SettingItem
-                        icon="🔔"
+                        icon="scale"
+                        iconColor={Colors.primary[500]}
+                        title="Weekly Weigh-in"
+                        subtitle={weightReminderEnabled ? 'Every Monday' : 'Off'}
+                        onPress={handleWeightReminderToggle}
+                    />
+                    <SettingItem
+                        icon="notifications"
                         iconColor={Colors.secondary[500]}
                         title="Notifications"
                         subtitle={notificationsEnabled ? 'Enabled' : 'Disabled'}
                         onPress={handleNotificationsToggle}
                     />
                     <SettingItem
-                        icon="🌙"
+                        icon="moon"
                         iconColor={Colors.tertiary[500]}
                         title="Appearance"
                         subtitle="Follows system theme"

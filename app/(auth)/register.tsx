@@ -10,6 +10,7 @@ import { borderRadius, spacing } from '@/constants/Layout';
 import { Typography } from '@/constants/Typography';
 import { useAuth } from '@/contexts/AuthContext';
 import { onboardingStorage } from '@/services/onboardingStorage';
+import { Ionicons } from '@expo/vector-icons';
 import { Link, router } from 'expo-router';
 import React, { useState } from 'react';
 import {
@@ -87,7 +88,9 @@ export default function RegisterScreen() {
                     <View style={styles.content}>
                         {/* Header */}
                         <View style={styles.header}>
-                            <Text style={styles.logo}>🌸</Text>
+                            <View style={[styles.logoContainer, { backgroundColor: Colors.primary[500] + '20' }]}>
+                                <Ionicons name="flower-outline" size={40} color={Colors.primary[500]} />
+                            </View>
                             <Text style={[styles.title, { color: theme.text }]}>Create Account</Text>
                             <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
                                 Start your personalized health journey
@@ -185,7 +188,15 @@ const styles = StyleSheet.create({
     scrollContent: { flexGrow: 1 },
     content: { flex: 1, padding: spacing.lg, justifyContent: 'center' },
     header: { alignItems: 'center', marginBottom: spacing.xl },
-    logo: { fontSize: 48, marginBottom: spacing.md },
+    logoContainer: {
+        width: 64,
+        height: 64,
+        borderRadius: 32,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: spacing.md,
+    },
+    // logo: { fontSize: 48, marginBottom: spacing.md },
     title: { ...Typography.h2, marginBottom: spacing.xs },
     subtitle: { ...Typography.body, textAlign: 'center' },
     form: { marginBottom: spacing.lg },
