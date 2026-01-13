@@ -105,6 +105,26 @@ class NotificationService {
     }
 
     /**
+     * Schedule weekly weight reminder (Default: Monday 8am)
+     */
+    async scheduleWeightReminder(weekday: number = 2, hour: number = 8) {
+        await Notifications.scheduleNotificationAsync({
+            content: {
+                title: 'Weekly Weigh-in ⚖️',
+                body: 'Time to track your progress! Log your weight to see your trends.',
+                data: { type: 'weight' },
+            },
+            trigger: {
+                type: Notifications.SchedulableTriggerInputTypes.CALENDAR,
+                weekday: weekday, // 1-7, Sunday = 1
+                hour: hour,
+                minute: 0,
+                repeats: true,
+            },
+        });
+    }
+
+    /**
      * Cancel all reminders
      */
     async cancelAllReminders() {

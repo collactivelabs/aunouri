@@ -387,6 +387,16 @@ export default function HomeScreen() {
                     </Link>
                 </View>
 
+                {/* Secondary Actions */}
+                <View style={styles.quickActions}>
+                    <Link href="/wellness-report" style={styles.quickActionLink}>
+                        <View style={[styles.quickAction, { backgroundColor: Colors.primary[500] + '15' }]}>
+                            <Text style={styles.quickActionIcon}>📈</Text>
+                            <Text style={[styles.quickActionText, { color: theme.text }]}>Wellness Report</Text>
+                        </View>
+                    </Link>
+                </View>
+
                 {/* Recent Meals Preview */}
                 {nutrition && nutrition.meals.length > 0 && (
                     <>

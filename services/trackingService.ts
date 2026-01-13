@@ -212,6 +212,33 @@ class TrackingService {
     }
 
     /**
+     * Log weight entry
+     */
+    async logWeight(userId: string, weight: number): Promise<WeightLog> {
+        try {
+            const log: Omit<WeightLog, 'id'> = {
+                userId,
+                date: new Date(),
+                weight,
+            };
+
+            const docRef = await addDoc(collection(db, 'weightLogs'), log);
+
+            // Also update user profile current weight
+            const { doc, updateDoc } = require('firebase/firestore');
+            await updateDoc(doc(db, 'users', userId), {
+                weightKg: weight,
+                lastWeighIn: new Date()
+            });
+
+            return { ...log, id: docRef.id };
+        } catch (error) {
+            console.error('Failed to log weight:', error);
+            throw error;
+        }
+    }
+
+    /**
      * Get aggregated daily progress
      */
     async getDailyProgress(userId: string, date: Date = new Date()): Promise<DayProgress> {
@@ -291,6 +318,140 @@ class TrackingService {
             };
         }
     }
+
+
+    /**
+     * Generate comprehensive wellness report
+     */
+    async generateWellnessReport(userId: string): Promise<WellnessReport> {
+        try {
+            // Get last 7 days range
+            const end = new Date();
+            const start = new Date();
+            start.setDate(start.getDate() - 7);
+
+            // Fetch logs
+            const startTs = Timestamp.fromDate(start);
+            const mealsQuery = query(collection(db, 'mealLogs'), where('userId', '==', userId), where('date', '>=', startTs));
+            const exerciseQuery = query(collection(db, 'exerciseLogs'), where('userId', '==', userId), where('date', '>=', startTs));
+            const waterQuery = query(collection(db, 'waterLogs'), where('userId', '==', userId), where('date', '>=', startTs));
+            const weightQuery = query(collection(db, 'weightLogs'), where('userId', '==', userId)); // Get all to find recent
+
+            const [mealsSnap, exerciseSnap, waterSnap, weightSnap] = await Promise.all([
+                getDocs(mealsQuery),
+                getDocs(exerciseQuery),
+                getDocs(waterQuery),
+                getDocs(weightQuery)
+            ]);
+
+            // Calculate aggregates
+            let totalScore = 0;
+            let totalCals = 0;
+            let totalProtein = 0;
+            let mealsCount = 0;
+
+            mealsSnap.forEach(doc => {
+                const data = doc.data() as MealLog;
+                totalScore += data.matchScore || 0;
+                totalCals += data.actualMeal.calories;
+                totalProtein += data.actualMeal.protein;
+                mealsCount++;
+            });
+
+            const exerciseCount = exerciseSnap.size;
+            let totalWater = 0;
+            waterSnap.forEach(doc => totalWater += (doc.data() as WaterLog).amount);
+
+            // Fetch user profile for goals
+            const { doc, getDoc } = require('firebase/firestore');
+            const userSnap = await getDoc(doc(db, 'users', userId));
+            const userProfile = userSnap.exists() ? userSnap.data() : {};
+
+            const calorieGoal = userProfile.calorieGoal || 2000;
+            const avgCalories = mealsCount > 0 ? totalCals / 7 : 0; // Avg over 7 days implies daily avg? Or avg per logged day? Using 7 days for weekly view.
+
+            // Weight Logic
+            let todayWeight = userProfile.weightKg || userProfile.weight;
+            let startWeight = userProfile.startWeight || todayWeight;
+            const goalWeight = userProfile.targetWeightKg || userProfile.weightGoalTarget;
+
+            // Get most recent weight from logs if available to double check
+            if (!weightSnap.empty) {
+                const weights = weightSnap.docs.map((d: any) => d.data() as WeightLog)
+                    .sort((a: any, b: any) => b.date['seconds'] - a.date['seconds']);
+                if (weights.length > 0) todayWeight = weights[0].weight;
+            }
+
+            // Trend
+            let weightTrend = 'stable';
+            if (todayWeight < startWeight) weightTrend = 'losing';
+            else if (todayWeight > startWeight) weightTrend = 'gaining';
+
+            // Generate insights
+            const insights: string[] = [];
+
+            // Weight Insight
+            if (goalWeight) {
+                if (Math.abs(todayWeight - goalWeight) < 1) insights.push("You are at your goal weight!");
+                else if (userProfile.weightGoal === 'lose' && weightTrend === 'losing') insights.push("You're successfully losing weight. Keep it up!");
+                else if (userProfile.weightGoal === 'gain' && weightTrend === 'gaining') insights.push("You're successfully gaining mass.");
+                else if (userProfile.weightGoal === 'lose' && weightTrend === 'gaining') insights.push("Warning: Weight is trending up vs your loss goal.");
+            }
+
+            // Adherence
+            const adherenceScore = mealsCount > 0 ? Math.round(totalScore / mealsCount) : 0;
+            if (adherenceScore > 80) insights.push("You're sticking to your meal plan excellently!");
+            else if (adherenceScore > 50) insights.push("Good effort on the meal plan. Try to match planned meals more closely.");
+            else if (mealsCount > 0) insights.push("You're deviating from the plan often. Consider adjusting preferences.");
+
+            // Protein
+            const avgProtein = totalProtein / 7;
+            const proteinGoal = userProfile.proteinGoal || 50;
+            if (avgProtein >= proteinGoal) insights.push("Great job hitting your protein targets!");
+            else insights.push(`Try to increase protein intake. Avg: ${Math.round(avgProtein)}g vs Goal: ${proteinGoal}g.`);
+
+            // Exercise
+            if (exerciseCount >= 3) insights.push("You're maintaining an active lifestyle!");
+            else insights.push("Aim for at least 3 exercise sessions a week to boost wellness.");
+
+            return {
+                adherenceScore,
+                avgCalories: Math.round(avgCalories),
+                avgProtein: Math.round(avgProtein),
+                avgWater: Math.round(totalWater / 7),
+                exerciseFrequency: exerciseCount,
+                insights,
+                todayWeight,
+                startWeight,
+                goalWeight,
+                weightTrend
+            };
+
+        } catch (error) {
+            console.error('Failed to generate wellness report:', error);
+            throw error;
+        }
+    }
+}
+
+export interface WellnessReport {
+    adherenceScore: number;
+    avgCalories: number;
+    avgProtein: number;
+    avgWater: number;
+    exerciseFrequency: number;
+    insights: string[];
+    todayWeight?: number;
+    startWeight?: number;
+    goalWeight?: number;
+    weightTrend?: string; // "stable", "gaining", "losing"
+}
+
+export interface WeightLog {
+    id: string;
+    userId: string;
+    date: Date;
+    weight: number;
 }
 
 export const trackingService = new TrackingService();
