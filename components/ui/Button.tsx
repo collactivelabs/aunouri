@@ -29,6 +29,7 @@ interface ButtonProps {
     icon?: React.ReactNode;
     fullWidth?: boolean;
     style?: ViewStyle;
+    textStyle?: TextStyle;
 }
 
 export function Button({
@@ -41,6 +42,7 @@ export function Button({
     icon,
     fullWidth = false,
     style,
+    textStyle,
 }: ButtonProps) {
     const colorScheme = useColorScheme() ?? 'light';
     const theme = Colors[colorScheme];
@@ -121,7 +123,7 @@ export function Button({
             ) : (
                 <>
                     {icon && <>{icon}</>}
-                    <Text style={[getTextStyle(), icon ? { marginLeft: spacing.sm } : undefined]}>
+                    <Text style={[getTextStyle(), icon ? { marginLeft: spacing.sm } : undefined, textStyle]}>
                         {title}
                     </Text>
                 </>

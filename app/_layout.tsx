@@ -7,6 +7,7 @@ import { useEffect } from 'react';
 import 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { EncouragementListener } from '@/components/EncouragementListener';
 import { useColorScheme } from '@/components/useColorScheme';
 import { AuthProvider } from '@/contexts/AuthContext';
 
@@ -52,6 +53,7 @@ function RootLayoutNav() {
 
     return (
         <AuthProvider>
+            <EncouragementListener />
             <SafeAreaProvider>
                 <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
                     <Stack>

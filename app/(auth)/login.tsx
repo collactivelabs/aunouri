@@ -45,7 +45,21 @@ export default function LoginScreen() {
             router.replace('/(tabs)');
         } catch (error: any) {
             console.error('Login error:', error);
-            Alert.alert('Login Failed', error.message || 'Please check your credentials');
+            let message = error.message || 'Please check your credentials';
+
+            // Map Firebase error codes to user-friendly messages
+            if (error.code === 'auth/invalid-credential' ||
+                error.code === 'auth/user-not-found' ||
+                error.code === 'auth/wrong-password' ||
+                error.message?.includes('invalid-credential')) {
+                message = 'Incorrect email or password. Please try again.';
+            } else if (error.code === 'auth/too-many-requests') {
+                message = 'Access temporarily disabled due to too many failed attempts. Please reset your password or try again later.';
+            } else if (error.code === 'auth/invalid-email') {
+                message = 'Please enter a valid email address.';
+            }
+
+            Alert.alert('Login Failed', message);
         } finally {
             setLoading(false);
         }

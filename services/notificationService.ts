@@ -142,6 +142,20 @@ class NotificationService {
     async cancelAllReminders() {
         await Notifications.cancelAllScheduledNotificationsAsync();
     }
+
+    /**
+     * Send an instant local notification
+     */
+    async sendInstantNotification(title: string, body: string) {
+        await Notifications.scheduleNotificationAsync({
+            content: {
+                title,
+                body,
+                sound: true,
+            },
+            trigger: null, // Immediate
+        });
+    }
 }
 
 export const notificationService = new NotificationService();

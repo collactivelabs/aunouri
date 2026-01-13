@@ -1,31 +1,17 @@
-/**
- * AuNouri - Apple HealthKit Service
- * Sync health data from Apple Health on iOS
- * 
- * NOTE: HealthKit only works on real iOS devices, not simulators.
- * Requires adding HealthKit capability in Xcode.
- */
-
 import { Platform } from 'react-native';
 
-// HealthKit types we want to read
-export const HEALTHKIT_PERMISSIONS = {
-    read: [
-        'Steps',
-        'ActiveEnergyBurned',
-        'BasalEnergyBurned',
-        'DistanceWalkingRunning',
-        'MenstrualFlow',
-        'SleepAnalysis',
-        'HeartRate',
-        'BodyMass',
-        'Height',
-    ],
-    write: [
-        'MenstrualFlow',
-        'BodyMass',
-    ],
-};
+let AppleHealthKit: any;
+if (Platform.OS === 'ios') {
+    try {
+        AppleHealthKit = require('react-native-health').default;
+    } catch (e) {
+        console.error('AppleHealthKit require failed:', e);
+    }
+}
+// Define permissions manually or use any if types are not available via import
+const Permissions = AppleHealthKit?.Constants?.Permissions;
+
+// Permissions moved inside requestPermissions to avoid runtime errors on non-iOS
 
 export interface HealthData {
     steps: number;
@@ -33,13 +19,10 @@ export interface HealthData {
     restingCalories: number;
     distance: number; // in meters
     heartRate: number | null;
-    menstrualFlow: 'none' | 'light' | 'medium' | 'heavy' | null;
     sleepHours: number;
     weight: number | null; // in kg
 }
 
-// Mock implementation - will be replaced with actual HealthKit calls
-// when running on a real device with proper Expo dev build
 class AppleHealthService {
     private isAvailable: boolean = false;
 
@@ -48,78 +31,137 @@ class AppleHealthService {
     }
 
     async checkAvailability(): Promise<boolean> {
-        if (!this.isAvailable) {
-            console.log('HealthKit is only available on iOS');
-            return false;
-        }
-        // In production, check if HealthKit is actually available
-        return true;
+        return new Promise((resolve) => {
+            if (Platform.OS !== 'ios') {
+                resolve(false);
+                return;
+            }
+            AppleHealthKit.isAvailable((err: Object, available: boolean) => {
+                if (err) {
+                    console.error('Child safety restriction active:', err);
+                    resolve(false);
+                }
+                resolve(available);
+            });
+        });
     }
 
     async requestPermissions(): Promise<boolean> {
-        if (!this.isAvailable) return false;
+        return new Promise((resolve) => {
+            if (Platform.OS !== 'ios' || !AppleHealthKit) {
+                resolve(false);
+                return;
+            }
 
-        try {
-            // In production with real HealthKit:
-            // const result = await AppleHealthKit.initHealthKit(HEALTHKIT_PERMISSIONS);
-            console.log('HealthKit permissions would be requested here');
-            return true;
-        } catch (error) {
-            console.error('Failed to request HealthKit permissions:', error);
-            return false;
-        }
+            const permissions = {
+                permissions: {
+                    read: [
+                        AppleHealthKit.Constants.Permissions.Steps,
+                        AppleHealthKit.Constants.Permissions.ActiveEnergyBurned,
+                        AppleHealthKit.Constants.Permissions.DistanceWalkingRunning,
+                        AppleHealthKit.Constants.Permissions.HeartRate,
+                        AppleHealthKit.Constants.Permissions.SleepAnalysis,
+                        AppleHealthKit.Constants.Permissions.Weight,
+                    ],
+                    write: [
+                        AppleHealthKit.Constants.Permissions.Weight,
+                    ],
+                },
+            };
+
+            AppleHealthKit.initHealthKit(permissions, (error: string) => {
+                if (error) {
+                    console.error('[HealthKit] Cannot grant permissions:', error);
+                    resolve(false);
+                }
+                resolve(true);
+            });
+        });
     }
 
     async getTodayData(): Promise<HealthData> {
-        if (!this.isAvailable) {
-            return this.getMockData();
+        if (Platform.OS !== 'ios') {
+            return this.getEmptyData();
         }
 
+        const now = new Date();
+        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
         try {
-            // In production, fetch real data from HealthKit
-            // For now, return mock data
-            return this.getMockData();
+            const [steps, activeCalories, distance] = await Promise.all([
+                this.getStepsValue(startOfDay),
+                this.getActiveEnergyValue(startOfDay),
+                this.getDistanceValue(startOfDay),
+            ]);
+
+            return {
+                steps,
+                activeCalories,
+                restingCalories: 0, // HealthKit resting calories requires separate query
+                distance,
+                heartRate: null, // Hard to get "single" heart rate for day
+                sleepHours: 0,
+                weight: null,
+            };
         } catch (error) {
-            console.error('Failed to get HealthKit data:', error);
-            return this.getMockData();
+            console.error('Failed to fetch HealthKit data:', error);
+            return this.getEmptyData();
         }
+    }
+
+    private getStepsValue(startDate: Date): Promise<number> {
+        return new Promise((resolve) => {
+            const options = { date: startDate.toISOString() };
+            AppleHealthKit.getStepCount(options, (err: Object, results: any) => {
+                if (err) resolve(0);
+                resolve(results?.value || 0);
+            });
+        });
+    }
+
+    private getActiveEnergyValue(startDate: Date): Promise<number> {
+        return new Promise((resolve) => {
+            const options = { startDate: startDate.toISOString() };
+            AppleHealthKit.getActiveEnergyBurned(options, (err: Object, results: any[]) => {
+                if (err || !results || results.length === 0) resolve(0);
+                // Sum up if array, or usually getActiveEnergyBurned returns samples
+                // Use getDailyActiveEnergyBurnedSamples instead?
+                // Let's use getActiveEnergyBurned which returns samples, need to sum them?
+                // Actually easier to just resolve 0 for MVP or fix implementation.
+                // Better:
+                let total = 0;
+                if (results) {
+                    results.forEach(r => total += r.value);
+                }
+                resolve(Math.round(total));
+            });
+        });
+    }
+
+    private getDistanceValue(startDate: Date): Promise<number> {
+        return new Promise((resolve) => {
+            const options = { startDate: startDate.toISOString() };
+            AppleHealthKit.getDistanceWalkingRunning(options, (err: Object, results: any) => {
+                if (err) resolve(0);
+                resolve(results?.value || 0);
+            });
+        });
     }
 
     async getSteps(startDate: Date, endDate: Date): Promise<number> {
-        // Mock implementation
-        return Math.floor(Math.random() * 5000) + 3000;
+        // Implementation for range
+        return 0;
     }
 
-    async getActiveCalories(startDate: Date, endDate: Date): Promise<number> {
-        // Mock implementation
-        return Math.floor(Math.random() * 300) + 200;
-    }
-
-    async getMenstrualData(startDate: Date, endDate: Date): Promise<{ date: Date; flow: string }[]> {
-        // Mock implementation - return empty for now
-        return [];
-    }
-
-    async logMenstrualFlow(date: Date, flow: 'light' | 'medium' | 'heavy'): Promise<boolean> {
-        try {
-            console.log(`Logging menstrual flow: ${flow} on ${date}`);
-            return true;
-        } catch (error) {
-            console.error('Failed to log menstrual flow:', error);
-            return false;
-        }
-    }
-
-    private getMockData(): HealthData {
+    private getEmptyData(): HealthData {
         return {
-            steps: 7842,
-            activeCalories: 342,
-            restingCalories: 1456,
-            distance: 5230,
-            heartRate: 72,
-            menstrualFlow: null,
-            sleepHours: 7.5,
-            weight: 62,
+            steps: 0,
+            activeCalories: 0,
+            restingCalories: 0,
+            distance: 0,
+            heartRate: null,
+            sleepHours: 0,
+            weight: null,
         };
     }
 }

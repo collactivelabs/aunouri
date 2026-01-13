@@ -140,12 +140,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             ...onboardingData,
         };
 
-        console.log('Creating user profile with onboarding data:', profile);
-        await setDoc(doc(db, 'users', newUser.uid), profile);
-        await setDoc(doc(db, 'users', newUser.uid), profile);
-        setUserProfile(profile);
+        // Sanitize profile data (Firestore doesn't accept undefined)
+        const cleanedProfile = Object.entries(profile).reduce((acc, [key, value]) => {
+            if (value !== undefined) {
+                acc[key] = value;
+            }
+            return acc;
+        }, {} as any);
 
-        setUserProfile(profile);
+        console.log('Creating user profile with onboarding data:', cleanedProfile);
+        await setDoc(doc(db, 'users', newUser.uid), cleanedProfile);
+        setUserProfile(cleanedProfile);
 
         // Schedule notification reminders if meal times are set
         if (onboardingData?.mealTimes) {

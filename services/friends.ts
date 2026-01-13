@@ -103,11 +103,43 @@ class FriendsService {
             const friendsRef = collection(db, 'users', userId, 'friends');
             const snapshot = await getDocs(friendsRef);
 
-            return snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data(),
-                lastActive: doc.data().lastActive?.toDate() || new Date(),
-            })) as Friend[];
+            const friends = await Promise.all(snapshot.docs.map(async (friendDoc) => {
+                const data = friendDoc.data();
+                let name = data.name;
+                let email = data.email;
+
+                // Self-healing: If name is missing (legacy/bugged data), fetch and repair
+                if (!name || !email) {
+                    try {
+                        const userSnap = await getDoc(doc(db, 'users', data.friendId));
+                        if (userSnap.exists()) {
+                            const userData = userSnap.data();
+                            name = userData.displayName || undefined;
+                            email = userData.email || undefined;
+
+                            // Repair the database record silently
+                            if (name) {
+                                await updateDoc(friendDoc.ref, {
+                                    name,
+                                    email: email || ''
+                                });
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('Failed to heal friend record:', e);
+                    }
+                }
+
+                return {
+                    id: friendDoc.id,
+                    ...data,
+                    name: name || 'Unknown User',
+                    email: email || '',
+                    lastActive: data.lastActive?.toDate() || new Date(),
+                };
+            }));
+
+            return friends as Friend[];
         } catch (error) {
             console.error('Failed to get friends:', error);
             return [];
@@ -218,16 +250,26 @@ class FriendsService {
 
             const request = requestSnap.data();
 
+            // Fetch the acceptor's profile to get their name
+            const userSnap = await getDoc(doc(db, 'users', userId));
+            const userData = userSnap.data();
+            const acceptorName = userData?.displayName || 'Unknown User';
+            const acceptorEmail = userData?.email || '';
+
             // Add to both users' friends collections
             await Promise.all([
+                // Add requester to acceptor's friends
                 addDoc(collection(db, 'users', userId, 'friends'), {
                     friendId: request.fromUserId,
                     name: request.fromUserName,
                     email: request.fromUserEmail,
                     addedAt: serverTimestamp(),
                 }),
+                // Add acceptor to requester's friends
                 addDoc(collection(db, 'users', request.fromUserId, 'friends'), {
                     friendId: userId,
+                    name: acceptorName,
+                    email: acceptorEmail,
                     addedAt: serverTimestamp(),
                 }),
             ]);
@@ -313,7 +355,7 @@ class FriendsService {
                 fromUserName,
                 toUserId,
                 type,
-                message,
+                message: message || null,
                 createdAt: serverTimestamp(),
                 read: false,
             });
@@ -350,6 +392,49 @@ class FriendsService {
         } catch (error) {
             console.error('Failed to get encouragements:', error);
             return [];
+        }
+    }
+
+    /**
+     * Subscribe to new encouragements
+     */
+    subscribeToEncouragements(userId: string, onUpdate: (encouragements: Encouragement[]) => void): () => void {
+        if (this.useMockData) return () => { };
+
+        const encRef = collection(db, 'encouragements');
+        const q = query(
+            encRef,
+            where('toUserId', '==', userId),
+            where('read', '==', false),
+            orderBy('createdAt', 'desc'),
+            limit(10)
+        );
+
+        // Import onSnapshot dynamically or if available locally
+        const { onSnapshot } = require('firebase/firestore');
+
+        return onSnapshot(q, (snapshot: any) => {
+            const items = snapshot.docs.map((doc: any) => ({
+                id: doc.id,
+                ...doc.data(),
+                createdAt: doc.data().createdAt?.toDate() || new Date(),
+            }));
+            onUpdate(items);
+        }, (error: any) => {
+            console.error('Encouragement subscription error:', error);
+        });
+    }
+
+    /**
+     * Mark encouragement as read
+     */
+    async markEncouragementAsRead(id: string): Promise<void> {
+        if (this.useMockData) return;
+        try {
+            const ref = doc(db, 'encouragements', id);
+            await updateDoc(ref, { read: true });
+        } catch (error) {
+            console.error('Failed to mark encouragement as read:', error);
         }
     }
 

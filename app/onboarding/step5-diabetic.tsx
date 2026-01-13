@@ -317,7 +317,7 @@ const styles = StyleSheet.create({
     typeChip: {
         flex: 1,
         paddingVertical: spacing.sm,
-        paddingHorizontal: spacing.md,
+        paddingHorizontal: spacing.sm,
         borderWidth: 1.5,
         borderRadius: borderRadius.md,
         alignItems: 'center',

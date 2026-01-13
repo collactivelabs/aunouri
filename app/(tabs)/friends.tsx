@@ -13,7 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Friend, FriendRequest, friendsService } from '@/services/friends';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
@@ -161,6 +161,24 @@ export default function FriendsScreen() {
         }
     };
 
+    const [encouragements, setEncouragements] = useState<Encouragement[]>([]);
+
+    useEffect(() => {
+        if (!user) return;
+
+        // Subscribe to encouragements (realtime)
+        const unsubscribe = friendsService.subscribeToEncouragements(user.uid, (items) => {
+            setEncouragements(items);
+        });
+
+        return () => unsubscribe();
+    }, [user]);
+
+    const handleDismissEncouragement = async (id: string) => {
+        await friendsService.markEncouragementAsRead(id);
+        // Optimistic update handled by realtime subscription
+    };
+
     if (loading) {
         return (
             <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
@@ -189,6 +207,44 @@ export default function FriendsScreen() {
                     onPress={() => setShowAddModal(true)}
                     style={{ marginBottom: spacing.lg }}
                 />
+
+                {/* Encouragements Inbox */}
+                {encouragements.length > 0 && (
+                    <View style={{ marginBottom: spacing.lg }}>
+                        <Text style={[styles.sectionTitle, { color: theme.text }]}>
+                            Inbox ({encouragements.length})
+                        </Text>
+                        <Card>
+                            {encouragements.map((item) => (
+                                <View key={item.id} style={[styles.requestItem, { paddingVertical: spacing.md }]}>
+                                    <View style={styles.requestInfo}>
+                                        <View style={[styles.avatar, { backgroundColor: Colors.tertiary[100] }]}>
+                                            <Text style={{ fontSize: 24 }}>
+                                                {item.type === 'cheer' ? '🎉' :
+                                                    item.type === 'high-five' ? '🙌' :
+                                                        item.type === 'congrats' ? '🏆' : '💪'}
+                                            </Text>
+                                        </View>
+                                        <View style={styles.requestText}>
+                                            <Text style={[styles.requestName, { color: theme.text }]}>
+                                                {item.fromUserName} sent a {item.type.replace('-', ' ')}!
+                                            </Text>
+                                            <Text style={[styles.requestEmail, { color: theme.textMuted }]}>
+                                                {item.message || 'Keep it up!'}
+                                            </Text>
+                                        </View>
+                                    </View>
+                                    <TouchableOpacity
+                                        onPress={() => handleDismissEncouragement(item.id)}
+                                        style={{ padding: 8 }}
+                                    >
+                                        <Ionicons name="close-circle-outline" size={24} color={theme.textMuted} />
+                                    </TouchableOpacity>
+                                </View>
+                            ))}
+                        </Card>
+                    </View>
+                )}
 
                 {/* Pending Requests */}
                 {pendingRequests.length > 0 && (
@@ -262,12 +318,12 @@ export default function FriendsScreen() {
                             >
                                 <View style={[styles.avatar, { backgroundColor: Colors.primary[500] }]}>
                                     <Text style={styles.avatarText}>
-                                        {friend.name.charAt(0).toUpperCase()}
+                                        {(friend.name || '?').charAt(0).toUpperCase()}
                                     </Text>
                                 </View>
                                 <View style={styles.friendInfo}>
                                     <Text style={[styles.friendName, { color: theme.text }]}>
-                                        {friend.name}
+                                        {friend.name || 'Unknown User'}
                                     </Text>
                                     <View style={styles.streakRow}>
                                         <Ionicons name="flame" size={14} color={Colors.secondary[500]} style={{ marginRight: 4 }} />

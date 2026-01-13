@@ -72,7 +72,26 @@ export default function RegisterScreen() {
             ]);
         } catch (error: any) {
             console.error('Registration error:', error);
-            Alert.alert('Registration Failed', error.message || 'Please try again');
+
+            if (error.code === 'auth/email-already-in-use' || error.message?.includes('email-already-in-use')) {
+                setLoading(false); // Ensure loading is off before alert
+                Alert.alert(
+                    'Account Already Exists',
+                    'This email address is already in use. Would you like to sign in instead?',
+                    [
+                        { text: 'Cancel', style: 'cancel' },
+                        { text: 'Sign In', onPress: () => router.push('/(auth)/login') }
+                    ]
+                );
+                return;
+            }
+
+            let message = error.message || 'Please try again';
+            if (error.code === 'auth/invalid-email') message = 'Please enter a valid email address.';
+            else if (error.code === 'auth/weak-password') message = 'Password must be at least 6 characters.';
+            else if (error.code === 'auth/network-request-failed') message = 'Network error. Please check your internet connection.';
+
+            Alert.alert('Registration Failed', message);
         } finally {
             setLoading(false);
         }

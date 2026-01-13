@@ -13,6 +13,7 @@ import { cycleService } from '@/services/cycle';
 import { HealthProvider, healthService, UnifiedHealthData } from '@/services/health';
 import { mealService } from '@/services/meals';
 import { notificationService } from '@/services/notificationService';
+import { onboardingStorage } from '@/services/onboardingStorage';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { router } from 'expo-router';
@@ -185,6 +186,11 @@ export default function ProfileScreen() {
                 const data = await healthService.syncTodayData();
                 setHealthData(data);
                 Alert.alert('Connected!', `Successfully connected to ${providerName}.`);
+            } else {
+                Alert.alert(
+                    'Connection Failed',
+                    `Could not connect to ${providerName}.\n\nIf you recently updated the app, please restart it. If on Simulator, HealthKit requires a compatible build.`
+                );
             }
         } catch (error) {
             Alert.alert('Error', 'Could not connect. Please try again.');
@@ -355,7 +361,7 @@ export default function ProfileScreen() {
                 {/* Health Stats */}
                 {healthData && healthData.provider !== 'none' && (
                     <Card variant="elevated" style={styles.healthCard}>
-                        <Text style={[styles.sectionTitle, { color: theme.text }]}>Today's Activity</Text>
+                        <Text style={[styles.sectionTitle, { color: theme.text }]}>Today&apos;s Activity</Text>
                         <View style={styles.healthStats}>
                             <View style={styles.healthStat}>
                                 <Ionicons name="footsteps" size={24} color={Colors.primary[500]} />
@@ -450,13 +456,38 @@ export default function ProfileScreen() {
                     />
                 </Card>
 
-                {/* Sign Out */}
                 <Button
                     title="Sign Out"
                     onPress={handleSignOut}
                     variant="secondary"
                     fullWidth
                     style={{ marginTop: spacing.lg }}
+                />
+
+                {/* Debug: Reset Onboarding */}
+                <Button
+                    title="Reset App / Onboarding (Debug)"
+                    onPress={() => {
+                        Alert.alert(
+                            'Reset App',
+                            'This will clear local storage and sign you out. You can start onboarding again.',
+                            [
+                                { text: 'Cancel', style: 'cancel' },
+                                {
+                                    text: 'Reset',
+                                    style: 'destructive',
+                                    onPress: async () => {
+                                        await onboardingStorage.clearOnboardingData();
+                                        await signOut();
+                                        router.replace('/');
+                                    }
+                                }
+                            ]
+                        );
+                    }}
+                    variant="ghost"
+                    textStyle={{ color: Colors.semantic.error, fontSize: 12 }}
+                    style={{ marginTop: spacing.md }}
                 />
 
                 <View style={styles.bottomSpacer} />
