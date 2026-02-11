@@ -30,6 +30,7 @@
         },
         "android": {
             "package": "com.aunouri.app",
+            "minSdkVersion": 26,
             "adaptiveIcon": {
                 "foregroundImage": "./assets/images/adaptive-icon.png",
                 "backgroundColor": "#ffffff"
@@ -51,7 +52,8 @@
                     "iosUrlScheme": "com.googleusercontent.apps.YOUR_IOS_CLIENT_ID"
                 }
             ],
-            "@react-native-community/datetimepicker"
+            "@react-native-community/datetimepicker",
+            "react-native-health-connect"
         ],
         "experiments": {
             "typedRoutes": true
