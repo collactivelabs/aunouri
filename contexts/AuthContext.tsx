@@ -239,14 +239,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             );
             if (__DEV__) console.log('Generated nonce, requesting Apple credential...');
 
-            // Get Apple credential with nonce
-            const appleCredential = await AppleAuthentication.signInAsync({
-                requestedScopes: [
-                    AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
-                    AppleAuthentication.AppleAuthenticationScope.EMAIL,
-                ],
-                nonce: hashedNonce,
-            });
+            // Get Apple credential with nonce (timeout prevents simulator hang)
+            const appleCredential = await Promise.race([
+                AppleAuthentication.signInAsync({
+                    requestedScopes: [
+                        AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+                        AppleAuthentication.AppleAuthenticationScope.EMAIL,
+                    ],
+                    nonce: hashedNonce,
+                }),
+                new Promise<never>((_, reject) =>
+                    setTimeout(() => reject(new Error(
+                        'Apple Sign-In timed out. This commonly happens on the iOS Simulator — please test on a physical device.'
+                    )), 30000)
+                ),
+            ]);
 
             if (__DEV__) console.log('Apple credential received');
 

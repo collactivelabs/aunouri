@@ -10,6 +10,7 @@ import { borderRadius, spacing } from '@/constants/Layout';
 import { Typography } from '@/constants/Typography';
 import { useAuth } from '@/contexts/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
+import * as AppleAuthentication from 'expo-apple-authentication';
 import { Link, router } from 'expo-router';
 import React, { useState } from 'react';
 import {
@@ -160,14 +161,15 @@ export default function LoginScreen() {
 
                     {/* Platform-specific SSO */}
                     {Platform.OS === 'ios' ? (
-                        <TouchableOpacity
-                            style={[styles.socialButton, { backgroundColor: theme.card, borderColor: theme.border }]}
+                        <AppleAuthentication.AppleAuthenticationButton
+                            buttonType={AppleAuthentication.AppleAuthenticationButtonType.CONTINUE}
+                            buttonStyle={colorScheme === 'dark'
+                                ? AppleAuthentication.AppleAuthenticationButtonStyle.WHITE
+                                : AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+                            cornerRadius={12}
+                            style={styles.appleButton}
                             onPress={handleAppleLogin}
-                            disabled={loading}
-                        >
-                            <Ionicons name="logo-apple" size={24} color={theme.text} />
-                            <Text style={[styles.socialText, { color: theme.text }]}>Continue with Apple</Text>
-                        </TouchableOpacity>
+                        />
                     ) : (
                         <TouchableOpacity
                             style={[styles.socialButton, { backgroundColor: theme.card, borderColor: theme.border }]}
@@ -239,6 +241,7 @@ const styles = StyleSheet.create({
     },
     // socialIcon: { fontSize: 20 },
     socialText: { ...Typography.button },
+    appleButton: { height: 52, width: '100%', marginBottom: spacing.xl },
     signupContainer: { flexDirection: 'row', justifyContent: 'center' },
     signupText: { ...Typography.body },
     signupLink: { ...Typography.body, fontWeight: '600' },
