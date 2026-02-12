@@ -103,10 +103,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setUser(firebaseUser);
 
             if (firebaseUser) {
-                // Fetch user profile from Firestore
-                const profileDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
-                if (profileDoc.exists()) {
-                    setUserProfile(profileDoc.data() as UserProfile);
+                try {
+                    const profileDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+                    if (profileDoc.exists()) {
+                        setUserProfile(profileDoc.data() as UserProfile);
+                    }
+                } catch (error) {
+                    if (__DEV__) console.error('Failed to fetch user profile:', error);
                 }
             } else {
                 setUserProfile(null);
@@ -219,6 +222,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             throw new Error('Apple Sign-In is only available on iOS');
         }
 
+        const isAvailable = await AppleAuthentication.isAvailableAsync();
+        if (!isAvailable) {
+            throw new Error('Apple Sign-In is not available on this device. Please ensure you are signed in with an Apple ID in Settings.');
+        }
+
         try {
             if (__DEV__) console.log('Starting Apple Sign-In...');
 
@@ -229,7 +237,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 ExpoCrypto.CryptoDigestAlgorithm.SHA256,
                 rawNonce
             );
-            if (__DEV__) console.log('Generated nonce');
+            if (__DEV__) console.log('Generated nonce, requesting Apple credential...');
 
             // Get Apple credential with nonce
             const appleCredential = await AppleAuthentication.signInAsync({
@@ -239,25 +247,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 ],
                 nonce: hashedNonce,
             });
-            if (__DEV__) console.log('Got Apple credential, identity token:', appleCredential.identityToken?.substring(0, 50) + '...');
+
+            if (__DEV__) console.log('Apple credential received');
+
+            if (!appleCredential.identityToken) {
+                throw new Error('Apple Sign-In failed: no identity token received. Please try again.');
+            }
 
             // Create Firebase OAuth credential with raw nonce
             const provider = new OAuthProvider('apple.com');
             const credential = provider.credential({
-                idToken: appleCredential.identityToken!,
-                rawNonce: rawNonce, // Firebase needs the raw (unhashed) nonce
+                idToken: appleCredential.identityToken,
+                rawNonce: rawNonce,
             });
-            if (__DEV__) console.log('Created Firebase credential');
 
             // Sign in with Firebase
             if (__DEV__) console.log('Signing in with Firebase...');
             const result = await signInWithCredential(auth, credential);
-            if (__DEV__) console.log('Firebase sign-in successful, user ID:', result.user.uid);
+            if (__DEV__) console.log('Firebase sign-in successful, user:', result.user.uid);
 
             // Create/update user profile (Apple only provides name on first sign-in)
             const profileDoc = await getDoc(doc(db, 'users', result.user.uid));
             if (!profileDoc.exists()) {
-                if (__DEV__) console.log('Creating new user profile...');
                 const fullName = appleCredential.fullName;
                 const displayName = fullName
                     ? `${fullName.givenName || ''} ${fullName.familyName || ''}`.trim()
@@ -273,17 +284,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 };
                 await setDoc(doc(db, 'users', result.user.uid), profile);
                 setUserProfile(profile);
-                if (__DEV__) console.log('Profile created successfully');
+                if (__DEV__) console.log('New profile created');
             } else {
-                if (__DEV__) console.log('User profile already exists, loading it...');
                 setUserProfile(profileDoc.data() as UserProfile);
             }
 
-            if (__DEV__) console.log('Apple Sign-In complete!');
+            if (__DEV__) console.log('Apple Sign-In complete');
         } catch (error: any) {
-            if (__DEV__) console.error('Apple Sign-In error:', error);
-            if (__DEV__) console.error('Error code:', error.code);
-            if (__DEV__) console.error('Error message:', error.message);
+            if (__DEV__) console.error('Apple Sign-In error:', error.code, error.message);
             if (error.code === 'ERR_REQUEST_CANCELED') {
                 throw new Error('Sign-in was cancelled');
             }
