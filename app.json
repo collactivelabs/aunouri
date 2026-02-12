@@ -53,7 +53,7 @@
             [
                 "@react-native-google-signin/google-signin",
                 {
-                    "iosUrlScheme": "com.googleusercontent.apps.YOUR_IOS_CLIENT_ID"
+                    "iosUrlScheme": "com.googleusercontent.apps.619382737054-7lv35nvrno8qnqkfgaaijgdtvllcerqd.apps.googleusercontent.com"
                 }
             ],
             "@react-native-community/datetimepicker",
@@ -64,8 +64,10 @@
         },
         "extra": {
             "eas": {
-                "projectId": "your-eas-project-id"
-            }
-        }
+                "projectId": "d6d3602b-c9ea-4917-9549-3d2ebb92ef38"
+            },
+            "router": {}
+        },
+        "owner": "emongwe"
     }
 }
