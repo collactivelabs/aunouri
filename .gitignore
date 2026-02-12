@@ -5,6 +5,7 @@ node_modules/
 scripts/
 
 # Expo
+.claude/
 .expo/
 dist/
 web-build/
