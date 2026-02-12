@@ -155,34 +155,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await setDoc(doc(db, 'users', newUser.uid), cleanedProfile);
         setUserProfile(cleanedProfile);
 
-        // Schedule notification reminders if meal times are set
+        // Fire-and-forget: schedule notifications (don't block registration)
         if (onboardingData?.mealTimes) {
-            try {
-                // Import dynamically to avoid circular dependencies if any (though here it's fine)
-                const { notificationService } = require('@/services/notificationService');
-                await notificationService.scheduleMealReminders(onboardingData.mealTimes);
-                if (__DEV__) console.log('Meal time notifications scheduled');
-            } catch (error) {
+            const { notificationService } = require('@/services/notificationService');
+            notificationService.scheduleMealReminders(onboardingData.mealTimes).catch((error: any) => {
                 if (__DEV__) console.error('Failed to schedule meal notifications:', error);
-            }
+            });
         }
 
-        // Save Cycle Settings if available
+        // Fire-and-forget: save cycle settings (don't block registration)
         if (onboardingData?.trackCycle) {
-            try {
-                const cycleSettings: CycleSettings = {
-                    userId: newUser.uid,
-                    averageCycleLength: onboardingData.cycleLength || 28,
-                    averagePeriodLength: onboardingData.periodLength || 5,
-                    lastPeriodStart: onboardingData.lastPeriodDate ? new Date(onboardingData.lastPeriodDate) : undefined,
-                    notifications: true,
-                };
-                await cycleService.saveCycleSettings(cycleSettings);
-                if (__DEV__) console.log('Cycle settings saved successfully');
-            } catch (error) {
+            const cycleSettings: CycleSettings = {
+                userId: newUser.uid,
+                averageCycleLength: onboardingData.cycleLength || 28,
+                averagePeriodLength: onboardingData.periodLength || 5,
+                lastPeriodStart: onboardingData.lastPeriodDate ? new Date(onboardingData.lastPeriodDate) : undefined,
+                notifications: true,
+            };
+            cycleService.saveCycleSettings(cycleSettings).catch((error: any) => {
                 if (__DEV__) console.error('Failed to save cycle settings during registration:', error);
-                // Non-blocking error
-            }
+            });
         }
     };
 

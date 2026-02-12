@@ -81,14 +81,13 @@ export default function RegisterScreen() {
             // 2. Create the account with onboarding data merged
             await signUp(email, password, name, onboardingData || undefined);
 
-            // 3. Clear local onboarding data after successful transfer
+            // 3. Clear local onboarding data after successful transfer (fire-and-forget)
             if (onboardingData) {
-                await onboardingStorage.clearOnboardingData();
+                onboardingStorage.clearOnboardingData().catch(() => {});
             }
 
-            Alert.alert('Success! 🎉', 'Your account has been created with your personalized plan!', [
-                { text: 'OK', onPress: () => router.replace('/(tabs)') }
-            ]);
+            // 4. Navigate immediately — don't wait for an alert tap
+            router.replace('/(tabs)');
         } catch (error: any) {
             if (__DEV__) console.error('Registration error:', error);
 
