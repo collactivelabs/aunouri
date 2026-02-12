@@ -104,7 +104,7 @@ export default function RecommendationsScreen() {
             const data = await cycleService.getCycleInfo(userId);
             setCycleInfo(data);
         } catch (error) {
-            console.error('Failed to load cycle data:', error);
+            if (__DEV__) console.error('Failed to load cycle data:', error);
         } finally {
             setLoading(false);
         }

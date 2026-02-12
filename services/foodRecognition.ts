@@ -9,7 +9,7 @@
  * Cost: Gemini has generous free tier (~60 requests/minute)
  */
 
-const GEMINI_API_KEY = 'REDACTED_GEMINI_KEY';
+const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY ?? '';
 
 export interface NutritionInfo {
     name: string;
@@ -130,7 +130,7 @@ class AIFoodRecognitionService {
      */
     async analyzeImage(imageBase64: string): Promise<FoodRecognitionResult> {
         if (!this.isConfigured) {
-            console.log('Using mock data - Gemini API not configured');
+            if (__DEV__) console.log('Using mock data - Gemini API not configured');
             await new Promise(resolve => setTimeout(resolve, 1500));
             return mockFoodResults;
         }
@@ -166,16 +166,16 @@ class AIFoodRecognitionService {
 
             // Handle rate limiting with retry
             if (response.status === 429) {
-                console.log('Rate limited, waiting 2 seconds and retrying...');
+                if (__DEV__) console.log('Rate limited, waiting 2 seconds and retrying...');
                 await new Promise(resolve => setTimeout(resolve, 2000));
                 // Return mock data on rate limit to not block the user
-                console.log('Using mock data due to rate limit');
+                if (__DEV__) console.log('Using mock data due to rate limit');
                 return mockFoodResults;
             }
 
             if (!response.ok) {
                 const errorBody = await response.text();
-                console.error('Gemini API error:', response.status, errorBody);
+                if (__DEV__) console.error('Gemini API error:', response.status, errorBody);
                 throw new Error(`Gemini API error: ${response.status}`);
             }
 
@@ -208,8 +208,8 @@ class AIFoodRecognitionService {
                 healthierAlternatives: parsed.healthierAlternatives || [],
             };
         } catch (error) {
-            console.error('AI food recognition failed:', error);
-            console.log('Falling back to mock data');
+            if (__DEV__) console.error('AI food recognition failed:', error);
+            if (__DEV__) console.log('Falling back to mock data');
             return mockFoodResults;
         }
     }
@@ -254,7 +254,7 @@ Return ONLY the JSON, no other text.`,
             const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
             return JSON.parse(text.trim());
         } catch (error) {
-            console.error('Food lookup failed:', error);
+            if (__DEV__) console.error('Food lookup failed:', error);
             return null;
         }
     }

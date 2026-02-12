@@ -62,7 +62,7 @@ export default function FriendsScreen() {
             setFriends(friendsList);
             setPendingRequests(requests);
         } catch (error) {
-            console.error('Failed to load friends data:', error);
+            if (__DEV__) console.error('Failed to load friends data:', error);
         } finally {
             setLoading(false);
             setRefreshing(false);

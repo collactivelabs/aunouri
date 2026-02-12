@@ -40,7 +40,7 @@ class MealPlanService {
         try {
             cycleInfo = await cycleService.getCycleInfo(userId);
         } catch (error) {
-            console.log('[MealPlan] Could not get cycle info:', error);
+            if (__DEV__) console.log('[MealPlan] Could not get cycle info:', error);
         }
 
         // Build user context for AI
@@ -62,7 +62,7 @@ class MealPlanService {
         // Determine number of days
         const daysCount = duration === '1week' ? 7 : duration === '2weeks' ? 14 : 28;
 
-        console.log('[MealPlan] Generating', daysCount, 'day plan for user:', userId);
+        if (__DEV__) console.log('[MealPlan] Generating', daysCount, 'day plan for user:', userId);
 
         // Generate plan with AI
         const aiResponse = await anthropicService.generateMealPlan(context, daysCount);
@@ -90,7 +90,7 @@ class MealPlanService {
         // Save to Firestore
         await this.savePlan(storedPlan);
 
-        console.log('[MealPlan] Plan saved with ID:', planId);
+        if (__DEV__) console.log('[MealPlan] Plan saved with ID:', planId);
         return storedPlan;
     }
 
@@ -132,7 +132,7 @@ class MealPlanService {
                 endDate: new Date(data.endDate),
             } as StoredMealPlan;
         } catch (error) {
-            console.error('[MealPlan] Failed to get active plan:', error);
+            if (__DEV__) console.error('[MealPlan] Failed to get active plan:', error);
             return null;
         }
     }
@@ -155,7 +155,7 @@ class MealPlanService {
                 endDate: new Date(data.endDate),
             } as StoredMealPlan;
         } catch (error) {
-            console.error('[MealPlan] Failed to get plan:', error);
+            if (__DEV__) console.error('[MealPlan] Failed to get plan:', error);
             return null;
         }
     }
@@ -198,9 +198,9 @@ class MealPlanService {
                 favoriteMeals: arrayUnion(favMeal),
             });
 
-            console.log('[MealPlan] Saved favorite meal:', meal.name);
+            if (__DEV__) console.log('[MealPlan] Saved favorite meal:', meal.name);
         } catch (error) {
-            console.error('[MealPlan] Failed to save favorite:', error);
+            if (__DEV__) console.error('[MealPlan] Failed to save favorite:', error);
             throw error;
         }
     }
@@ -218,7 +218,7 @@ class MealPlanService {
             const data = snapshot.data();
             return data.favoriteMeals || [];
         } catch (error) {
-            console.error('[MealPlan] Failed to get favorites:', error);
+            if (__DEV__) console.error('[MealPlan] Failed to get favorites:', error);
             return [];
         }
     }
@@ -231,7 +231,7 @@ class MealPlanService {
             const planRef = doc(db, 'mealPlans', planId);
             await updateDoc(planRef, { status });
         } catch (error) {
-            console.error('[MealPlan] Failed to update plan status:', error);
+            if (__DEV__) console.error('[MealPlan] Failed to update plan status:', error);
             throw error;
         }
     }
@@ -260,7 +260,7 @@ class MealPlanService {
                 } as StoredMealPlan;
             });
         } catch (error) {
-            console.error('[MealPlan] Failed to get plan history:', error);
+            if (__DEV__) console.error('[MealPlan] Failed to get plan history:', error);
             return [];
         }
     }

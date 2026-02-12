@@ -51,42 +51,8 @@ export interface Encouragement {
     read: boolean;
 }
 
-// Mock data for development
-const mockFriends: Friend[] = [
-    {
-        id: '1',
-        name: 'Sarah Johnson',
-        email: 'sarah@example.com',
-        streak: 32,
-        lastActive: new Date(),
-    },
-    {
-        id: '2',
-        name: 'Emily Chen',
-        email: 'emily@example.com',
-        streak: 18,
-        lastActive: new Date(Date.now() - 3600000),
-    },
-    {
-        id: '3',
-        name: 'Jessica Williams',
-        email: 'jessica@example.com',
-        streak: 45,
-        lastActive: new Date(Date.now() - 7200000),
-    },
-];
-
-const mockPendingRequests: FriendRequest[] = [
-    {
-        id: 'req1',
-        fromUserId: 'user123',
-        fromUserName: 'Amanda Smith',
-        fromUserEmail: 'amanda@example.com',
-        toUserId: 'currentUser',
-        status: 'pending',
-        createdAt: new Date(Date.now() - 86400000),
-    },
-];
+const mockFriends: Friend[] = [];
+const mockPendingRequests: FriendRequest[] = [];
 
 class FriendsService {
     private useMockData = false; // Disabled - use real Firestore data
@@ -126,7 +92,7 @@ class FriendsService {
                             }
                         }
                     } catch (e) {
-                        console.warn('Failed to heal friend record:', e);
+                        if (__DEV__) console.warn('Failed to heal friend record:', e);
                     }
                 }
 
@@ -141,7 +107,7 @@ class FriendsService {
 
             return friends as Friend[];
         } catch (error) {
-            console.error('Failed to get friends:', error);
+            if (__DEV__) console.error('Failed to get friends:', error);
             return [];
         }
     }
@@ -170,7 +136,7 @@ class FriendsService {
                 createdAt: doc.data().createdAt?.toDate() || new Date(),
             })) as FriendRequest[];
         } catch (error) {
-            console.error('Failed to get friend requests:', error);
+            if (__DEV__) console.error('Failed to get friend requests:', error);
             return [];
         }
     }
@@ -185,7 +151,7 @@ class FriendsService {
         toUserEmail: string
     ): Promise<{ success: boolean; error?: string }> {
         if (this.useMockData) {
-            console.log(`Mock: Sending friend request from ${fromUserEmail} to ${toUserEmail}`);
+            if (__DEV__) console.log(`Mock: Sending friend request from ${fromUserEmail} to ${toUserEmail}`);
             return { success: true };
         }
 
@@ -226,7 +192,7 @@ class FriendsService {
 
             return { success: true };
         } catch (error) {
-            console.error('Failed to send friend request:', error);
+            if (__DEV__) console.error('Failed to send friend request:', error);
             return { success: false, error: 'Failed to send request' };
         }
     }
@@ -236,7 +202,7 @@ class FriendsService {
      */
     async acceptFriendRequest(requestId: string, userId: string): Promise<boolean> {
         if (this.useMockData) {
-            console.log(`Mock: Accepting friend request ${requestId}`);
+            if (__DEV__) console.log(`Mock: Accepting friend request ${requestId}`);
             return true;
         }
 
@@ -279,7 +245,7 @@ class FriendsService {
 
             return true;
         } catch (error) {
-            console.error('Failed to accept friend request:', error);
+            if (__DEV__) console.error('Failed to accept friend request:', error);
             return false;
         }
     }
@@ -289,7 +255,7 @@ class FriendsService {
      */
     async rejectFriendRequest(requestId: string): Promise<boolean> {
         if (this.useMockData) {
-            console.log(`Mock: Rejecting friend request ${requestId}`);
+            if (__DEV__) console.log(`Mock: Rejecting friend request ${requestId}`);
             return true;
         }
 
@@ -298,7 +264,7 @@ class FriendsService {
             await updateDoc(requestRef, { status: 'rejected' });
             return true;
         } catch (error) {
-            console.error('Failed to reject friend request:', error);
+            if (__DEV__) console.error('Failed to reject friend request:', error);
             return false;
         }
     }
@@ -308,7 +274,7 @@ class FriendsService {
      */
     async removeFriend(userId: string, friendId: string): Promise<boolean> {
         if (this.useMockData) {
-            console.log(`Mock: Removing friend ${friendId}`);
+            if (__DEV__) console.log(`Mock: Removing friend ${friendId}`);
             return true;
         }
 
@@ -329,7 +295,7 @@ class FriendsService {
 
             return true;
         } catch (error) {
-            console.error('Failed to remove friend:', error);
+            if (__DEV__) console.error('Failed to remove friend:', error);
             return false;
         }
     }
@@ -345,7 +311,7 @@ class FriendsService {
         message?: string
     ): Promise<boolean> {
         if (this.useMockData) {
-            console.log(`Mock: Sending ${type} encouragement to ${toUserId}`);
+            if (__DEV__) console.log(`Mock: Sending ${type} encouragement to ${toUserId}`);
             return true;
         }
 
@@ -361,7 +327,7 @@ class FriendsService {
             });
             return true;
         } catch (error) {
-            console.error('Failed to send encouragement:', error);
+            if (__DEV__) console.error('Failed to send encouragement:', error);
             return false;
         }
     }
@@ -390,7 +356,7 @@ class FriendsService {
                 createdAt: doc.data().createdAt?.toDate() || new Date(),
             })) as Encouragement[];
         } catch (error) {
-            console.error('Failed to get encouragements:', error);
+            if (__DEV__) console.error('Failed to get encouragements:', error);
             return [];
         }
     }
@@ -421,7 +387,7 @@ class FriendsService {
             }));
             onUpdate(items);
         }, (error: any) => {
-            console.error('Encouragement subscription error:', error);
+            if (__DEV__) console.error('Encouragement subscription error:', error);
         });
     }
 
@@ -434,7 +400,7 @@ class FriendsService {
             const ref = doc(db, 'encouragements', id);
             await updateDoc(ref, { read: true });
         } catch (error) {
-            console.error('Failed to mark encouragement as read:', error);
+            if (__DEV__) console.error('Failed to mark encouragement as read:', error);
         }
     }
 

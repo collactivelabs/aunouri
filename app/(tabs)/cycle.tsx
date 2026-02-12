@@ -122,7 +122,7 @@ export default function CycleScreen() {
             setRecentPeriods(periods);
             setDailyLogs(logs);
         } catch (error) {
-            console.error('Failed to load cycle data:', error);
+            if (__DEV__) console.error('Failed to load cycle data:', error);
         } finally {
             setLoading(false);
         }
@@ -163,7 +163,7 @@ export default function CycleScreen() {
             loadCycleData();
             Alert.alert('Saved', 'Your cycle log has been updated.');
         } catch (error) {
-            console.error('Failed to log day:', error);
+            if (__DEV__) console.error('Failed to log day:', error);
             Alert.alert('Error', 'Could not save log. Please try again.');
         } finally {
             setLoggingPeriod(false);
@@ -189,8 +189,8 @@ export default function CycleScreen() {
         const daysInMonth = new Date(year, month + 1, 0).getDate();
         const firstDayOfMonth = new Date(year, month, 1).getDay(); // 0 = Sunday
 
-        const cycleLength = 28; // TODO: Get from user settings
-        const periodLength = 5;
+        const cycleLength = cycleInfo?.cycleLength || 28;
+        const periodLength = cycleInfo?.periodLength || 5;
         const currentDayOfCycle = cycleInfo?.dayOfCycle || 1;
 
         // Add empty cells for days before the 1st of month

@@ -5,7 +5,7 @@ if (Platform.OS === 'ios') {
     try {
         AppleHealthKit = require('react-native-health').default;
     } catch (e) {
-        console.error('AppleHealthKit require failed:', e);
+        if (__DEV__) console.error('AppleHealthKit require failed:', e);
     }
 }
 // Define permissions manually or use any if types are not available via import
@@ -38,7 +38,7 @@ class AppleHealthService {
             }
             AppleHealthKit.isAvailable((err: Object, available: boolean) => {
                 if (err) {
-                    console.error('Child safety restriction active:', err);
+                    if (__DEV__) console.error('Child safety restriction active:', err);
                     resolve(false);
                 }
                 resolve(available);
@@ -71,7 +71,7 @@ class AppleHealthService {
 
             AppleHealthKit.initHealthKit(permissions, (error: string) => {
                 if (error) {
-                    console.error('[HealthKit] Cannot grant permissions:', error);
+                    if (__DEV__) console.error('[HealthKit] Cannot grant permissions:', error);
                     resolve(false);
                 }
                 resolve(true);
@@ -104,7 +104,7 @@ class AppleHealthService {
                 weight: null,
             };
         } catch (error) {
-            console.error('Failed to fetch HealthKit data:', error);
+            if (__DEV__) console.error('Failed to fetch HealthKit data:', error);
             return this.getEmptyData();
         }
     }

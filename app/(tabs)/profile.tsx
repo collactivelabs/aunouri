@@ -159,7 +159,7 @@ export default function ProfileScreen() {
                 setHealthData(data);
             }
         } catch (error) {
-            console.error('Failed to load profile data:', error);
+            if (__DEV__) console.error('Failed to load profile data:', error);
         } finally {
             setLoading(false);
         }
@@ -210,7 +210,7 @@ export default function ProfileScreen() {
                         await signOut();
                         router.replace('/(auth)/login');
                     } catch (error) {
-                        console.error('Sign out error:', error);
+                        if (__DEV__) console.error('Sign out error:', error);
                     }
                 },
             },

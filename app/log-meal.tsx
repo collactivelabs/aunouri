@@ -47,7 +47,7 @@ export default function LogMealScreen() {
                 setScannedData(parsed);
                 determineMealContext(parsed);
             } catch (e) {
-                console.error('Failed to parse results', e);
+                if (__DEV__) console.error('Failed to parse results', e);
                 Alert.alert('Error', 'Invalid meal data');
                 router.back();
             }
@@ -86,7 +86,7 @@ export default function LogMealScreen() {
                 }
             }
         } catch (error) {
-            console.error('Error determining context:', error);
+            if (__DEV__) console.error('Error determining context:', error);
         } finally {
             setLoading(false);
         }
@@ -138,7 +138,7 @@ export default function LogMealScreen() {
                 { text: 'OK', onPress: () => router.push('/(tabs)') }
             ]);
         } catch (error) {
-            console.error('Failed to log meal:', error);
+            if (__DEV__) console.error('Failed to log meal:', error);
             Alert.alert('Error', 'Could not save meal.');
         }
     };

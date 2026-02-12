@@ -84,7 +84,7 @@ class UnifiedHealthService {
             }
             return success;
         } catch (error) {
-            console.error(`Failed to connect to ${provider}:`, error);
+            if (__DEV__) console.error(`Failed to connect to ${provider}:`, error);
             return false;
         }
     }
@@ -158,7 +158,7 @@ class UnifiedHealthService {
 
             return data;
         } catch (error) {
-            console.error('Failed to sync health data:', error);
+            if (__DEV__) console.error('Failed to sync health data:', error);
             return data;
         }
     }

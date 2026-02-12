@@ -56,11 +56,11 @@ class SamsungHealthService {
         try {
             // In production:
             // await HealthConnect.requestPermission(HEALTH_CONNECT_PERMISSIONS);
-            console.log('Health Connect permissions would be requested here');
+            if (__DEV__) console.log('Health Connect permissions would be requested here');
             this.isConnected = true;
             return true;
         } catch (error) {
-            console.error('Failed to request Health Connect permissions:', error);
+            if (__DEV__) console.error('Failed to request Health Connect permissions:', error);
             return false;
         }
     }
@@ -79,7 +79,7 @@ class SamsungHealthService {
             // In production, fetch real data from Health Connect
             return this.getMockData();
         } catch (error) {
-            console.error('Failed to get Health Connect data:', error);
+            if (__DEV__) console.error('Failed to get Health Connect data:', error);
             return this.getMockData();
         }
     }
@@ -96,10 +96,10 @@ class SamsungHealthService {
 
     async syncMenstrualData(startDate: Date, endDate: Date): Promise<boolean> {
         try {
-            console.log(`Syncing menstrual data: ${startDate} to ${endDate}`);
+            if (__DEV__) console.log(`Syncing menstrual data: ${startDate} to ${endDate}`);
             return true;
         } catch (error) {
-            console.error('Failed to sync menstrual data:', error);
+            if (__DEV__) console.error('Failed to sync menstrual data:', error);
             return false;
         }
     }

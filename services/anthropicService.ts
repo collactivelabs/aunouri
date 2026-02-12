@@ -3,8 +3,7 @@
  * AI integration for personalized meal plan generation
  */
 
-// API Key - same pattern as Gemini in foodRecognition.ts
-const ANTHROPIC_API_KEY = 'REDACTED_ANTHROPIC_KEY';
+const ANTHROPIC_API_KEY = process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY ?? '';
 
 // Types for Claude API
 interface ClaudeResponse {
@@ -160,7 +159,7 @@ Return ONLY valid JSON (no markdown):
     private async generateWeekPlan(context: UserContext, weekNumber: number = 1): Promise<MealPlanResponse> {
         const prompt = this.buildMealPlanPrompt(context);
 
-        console.log('[Anthropic] Generating week', weekNumber, 'meal plan');
+        if (__DEV__) console.log('[Anthropic] Generating week', weekNumber, 'meal plan');
 
         const response = await fetch(ANTHROPIC_API_URL, {
             method: 'POST',
@@ -178,7 +177,7 @@ Return ONLY valid JSON (no markdown):
 
         if (!response.ok) {
             const error = await response.text();
-            console.error('[Anthropic] API error:', error);
+            if (__DEV__) console.error('[Anthropic] API error:', error);
             throw new Error(`Claude API error: ${response.status}`);
         }
 
@@ -189,7 +188,7 @@ Return ONLY valid JSON (no markdown):
             throw new Error('No text response from Claude');
         }
 
-        console.log('[Anthropic] Raw response length:', textContent.text.length);
+        if (__DEV__) console.log('[Anthropic] Raw response length:', textContent.text.length);
         //console.log('[Anthropic] Raw response:', textContent.text);
 
         // Parse the JSON response - try to find complete JSON object
@@ -198,18 +197,18 @@ Return ONLY valid JSON (no markdown):
         // Try to parse the entire response first
         try {
             const mealPlan: MealPlanResponse = JSON.parse(text);
-            console.log('[Anthropic] Generated week with', mealPlan.days?.length || 0, 'days');
+            if (__DEV__) console.log('[Anthropic] Generated week with', mealPlan.days?.length || 0, 'days');
             return mealPlan;
         } catch {
             // Try to extract JSON from the response
             const jsonMatch = text.match(/\{[\s\S]*\}/);
             if (!jsonMatch) {
-                console.error('[Anthropic] Could not find JSON in response');
+                if (__DEV__) console.error('[Anthropic] Could not find JSON in response');
                 throw new Error('Could not parse JSON from Claude response');
             }
 
             const mealPlan: MealPlanResponse = JSON.parse(jsonMatch[0]);
-            console.log('[Anthropic] Generated week with', mealPlan.days?.length || 0, 'days');
+            if (__DEV__) console.log('[Anthropic] Generated week with', mealPlan.days?.length || 0, 'days');
             return mealPlan;
         }
     }
@@ -222,7 +221,7 @@ Return ONLY valid JSON (no markdown):
             throw new Error('Anthropic API key not configured');
         }
 
-        console.log('[Anthropic] Generating meal plan for', duration, 'days');
+        if (__DEV__) console.log('[Anthropic] Generating meal plan for', duration, 'days');
 
         try {
             // For plans longer than 7 days, generate in weekly chunks
@@ -236,7 +235,7 @@ Return ONLY valid JSON (no markdown):
             const allIngredients: Ingredient[] = [];
 
             for (let week = 1; week <= weeks; week++) {
-                console.log(`[Anthropic] Generating week ${week} of ${weeks}...`);
+                if (__DEV__) console.log(`[Anthropic] Generating week ${week} of ${weeks}...`);
                 const weekPlan = await this.generateWeekPlan(context, week);
 
                 const offsetDays = weekPlan.days.map((day, index) => ({
@@ -269,7 +268,7 @@ Return ONLY valid JSON (no markdown):
                 summary: `${duration}-day personalized meal plan`,
             };
         } catch (error) {
-            console.error('[Anthropic] Failed to generate meal plan:', error);
+            if (__DEV__) console.error('[Anthropic] Failed to generate meal plan:', error);
             throw error;
         }
     }

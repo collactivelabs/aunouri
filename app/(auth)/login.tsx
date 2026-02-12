@@ -44,7 +44,7 @@ export default function LoginScreen() {
             await signIn(email, password);
             router.replace('/(tabs)');
         } catch (error: any) {
-            console.error('Login error:', error);
+            if (__DEV__) console.error('Login error:', error);
             let message = error.message || 'Please check your credentials';
 
             // Map Firebase error codes to user-friendly messages
@@ -71,7 +71,7 @@ export default function LoginScreen() {
             await signInWithApple();
             router.replace('/(tabs)');
         } catch (error: any) {
-            console.error('Apple login error:', error);
+            if (__DEV__) console.error('Apple login error:', error);
             Alert.alert('Apple Sign-In', error.message || 'Could not sign in with Apple');
         } finally {
             setLoading(false);
@@ -84,7 +84,7 @@ export default function LoginScreen() {
             await signInWithGoogle();
             router.replace('/(tabs)');
         } catch (error: any) {
-            console.error('Google login error:', error);
+            if (__DEV__) console.error('Google login error:', error);
             Alert.alert('Google Sign-In', error.message || 'Could not sign in with Google');
         } finally {
             setLoading(false);

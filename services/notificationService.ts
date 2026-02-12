@@ -37,7 +37,7 @@ class NotificationService {
         }
 
         if (finalStatus !== 'granted') {
-            console.log('Failed to get push token for push notification!');
+            if (__DEV__) console.log('Failed to get push token for push notification!');
             return false;
         }
 

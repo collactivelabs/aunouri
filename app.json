@@ -20,8 +20,12 @@
             "infoPlist": {
                 "NSCameraUsageDescription": "AuNouri needs camera access to scan and log your meals",
                 "NSPhotoLibraryUsageDescription": "AuNouri needs photo library access to select meal photos",
+                "NSPhotoLibraryAddUsageDescription": "AuNouri needs permission to save meal photos to your library",
                 "NSHealthShareUsageDescription": "AuNouri needs access to health data to track your daily activity and calories.",
-                "NSHealthUpdateUsageDescription": "AuNouri needs access to update your health data."
+                "NSHealthUpdateUsageDescription": "AuNouri needs access to update your health data.",
+                "NSMotionUsageDescription": "AuNouri uses motion data to accurately track your daily activity and step count.",
+                "NSFaceIDUsageDescription": "AuNouri uses Face ID to securely authenticate your account.",
+                "ITSAppUsesNonExemptEncryption": false
             },
             "entitlements": {
                 "com.apple.developer.healthkit": true,

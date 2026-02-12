@@ -67,7 +67,7 @@ export default function MealHistoryScreen() {
                     : 0,
             });
         } catch (error) {
-            console.error('Failed to load meals:', error);
+            if (__DEV__) console.error('Failed to load meals:', error);
         } finally {
             setLoading(false);
             setRefreshing(false);

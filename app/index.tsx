@@ -24,8 +24,8 @@ export default function Index() {
 
         // Check if onboarding has been completed (stored locally)
         const completed = await onboardingStorage.hasCompletedOnboarding();
-        console.log('[Index] Onboarding completed:', completed);
-        console.log('[Index] User:', user?.uid || 'none');
+        if (__DEV__) console.log('[Index] Onboarding completed:', completed);
+        if (__DEV__) console.log('[Index] User:', user?.uid || 'none');
         setHasCompletedOnboarding(completed);
         setCheckingOnboarding(false);
     };
@@ -41,18 +41,18 @@ export default function Index() {
 
     // User is logged in - go to main app
     if (user) {
-        console.log('[Index] Routing to tabs - user logged in:', user.uid);
+        if (__DEV__) console.log('[Index] Routing to tabs - user logged in:', user.uid);
         return <Redirect href="/(tabs)" />;
     }
 
     // Guest who completed onboarding - go to main app (limited features)
     if (hasCompletedOnboarding) {
-        console.log('[Index] Routing to tabs - guest completed onboarding');
+        if (__DEV__) console.log('[Index] Routing to tabs - guest completed onboarding');
         return <Redirect href="/(tabs)" />;
     }
 
     // New user - start onboarding
-    console.log('[Index] Routing to onboarding - new user');
+    if (__DEV__) console.log('[Index] Routing to onboarding - new user');
     return <Redirect href="/onboarding/step1-basics" />;
 }
 

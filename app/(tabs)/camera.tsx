@@ -91,7 +91,7 @@ export default function CameraScreen() {
                 analyzePhoto(photo.base64 || '');
             }
         } catch (error) {
-            console.error('Failed to take photo:', error);
+            if (__DEV__) console.error('Failed to take photo:', error);
             Alert.alert('Error', 'Failed to take photo. Please try again.');
         }
     };
@@ -123,7 +123,7 @@ export default function CameraScreen() {
             const recognitionResult = await foodRecognitionService.analyzeImage(base64);
             setResults(recognitionResult);
         } catch (error) {
-            console.error('Food recognition failed:', error);
+            if (__DEV__) console.error('Food recognition failed:', error);
             Alert.alert('Error', 'Failed to analyze food. Please try again.');
             setPhotoUri(null);
         } finally {

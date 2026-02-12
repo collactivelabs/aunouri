@@ -46,7 +46,7 @@ export default function MealDetailsScreen() {
                 setMeal(parsed);
             }
         } catch (error) {
-            console.error('Failed to load meal:', error);
+            if (__DEV__) console.error('Failed to load meal:', error);
         } finally {
             setLoading(false);
         }

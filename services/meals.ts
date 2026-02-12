@@ -83,10 +83,10 @@ class MealService {
 
             const docRef = await addDoc(collection(db, 'meals'), mealData);
 
-            console.log('Meal logged with ID:', docRef.id);
+            if (__DEV__) console.log('Meal logged with ID:', docRef.id);
             return docRef.id;
         } catch (error) {
-            console.error('Failed to log meal:', error);
+            if (__DEV__) console.error('Failed to log meal:', error);
             throw error;
         }
     }
@@ -109,7 +109,7 @@ class MealService {
             );
 
             const snapshot = await getDocs(q);
-            console.log(`Found ${snapshot.size} total meals for user ${userId}`);
+            if (__DEV__) console.log(`Found ${snapshot.size} total meals for user ${userId}`);
 
             // Filter and sort in memory
             const meals = snapshot.docs
@@ -128,10 +128,10 @@ class MealService {
 
 
 
-            console.log(`Filtered to ${meals.length} meals for ${targetYear}-${targetMonth + 1}-${targetDay}`);
+            if (__DEV__) console.log(`Filtered to ${meals.length} meals for ${targetYear}-${targetMonth + 1}-${targetDay}`);
             return meals as MealLog[];
         } catch (error) {
-            console.error('Failed to get meals:', error);
+            if (__DEV__) console.error('Failed to get meals:', error);
             return [];
         }
     }
@@ -189,7 +189,7 @@ class MealService {
 
             return meals as MealLog[];
         } catch (error) {
-            console.error('Failed to get recent meals:', error);
+            if (__DEV__) console.error('Failed to get recent meals:', error);
             return [];
         }
     }
@@ -235,7 +235,7 @@ class MealService {
 
             return streak;
         } catch (error) {
-            console.error('Failed to calculate streak:', error);
+            if (__DEV__) console.error('Failed to calculate streak:', error);
             return 0;
         }
     }
@@ -247,9 +247,9 @@ class MealService {
         try {
             const { deleteDoc, doc } = await import('firebase/firestore');
             await deleteDoc(doc(db, 'meals', mealId));
-            console.log('Meal deleted:', mealId);
+            if (__DEV__) console.log('Meal deleted:', mealId);
         } catch (error) {
-            console.error('Failed to delete meal:', error);
+            if (__DEV__) console.error('Failed to delete meal:', error);
             throw error;
         }
     }
@@ -277,7 +277,7 @@ class MealService {
 
             return meals as MealLog[];
         } catch (error) {
-            console.error('Failed to get weekly meals:', error);
+            if (__DEV__) console.error('Failed to get weekly meals:', error);
             return [];
         }
     }

@@ -28,7 +28,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function WellnessReportScreen() {
     const colorScheme = useColorScheme() ?? 'light';
     const theme = Colors[colorScheme];
-    const { user } = useAuth();
+    const { user, userProfile } = useAuth();
 
     const [report, setReport] = useState<WellnessReport | null>(null);
     const [loading, setLoading] = useState(true);
@@ -45,7 +45,7 @@ export default function WellnessReportScreen() {
             const data = await trackingService.generateWellnessReport(user.uid);
             setReport(data);
         } catch (error) {
-            console.error('Failed to load wellness report:', error);
+            if (__DEV__) console.error('Failed to load wellness report:', error);
             Alert.alert('Error', 'Could not generate report.');
         } finally {
             setLoading(false);
@@ -231,7 +231,7 @@ export default function WellnessReportScreen() {
                     <ChartRow
                         label="Avg Calories"
                         value={report.avgCalories}
-                        target={2000} // TODO: Pass from user profile
+                        target={userProfile?.calorieGoal || 2000}
                         unit="cal"
                         color={Colors.primary[500]}
                         theme={theme}
@@ -239,7 +239,7 @@ export default function WellnessReportScreen() {
                     <ChartRow
                         label="Avg Protein"
                         value={report.avgProtein}
-                        target={100} // TODO: Pass from user profile
+                        target={userProfile?.proteinGoal || 100}
                         unit="g"
                         color={Colors.secondary[500]}
                         theme={theme}

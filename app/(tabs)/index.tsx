@@ -82,7 +82,7 @@ export default function HomeScreen() {
                 setWaterGoal(userProfile.waterGoal);
             }
         } catch (error) {
-            console.error('Failed to load home data:', error);
+            if (__DEV__) console.error('Failed to load home data:', error);
         } finally {
             setLoading(false);
         }
@@ -118,7 +118,7 @@ export default function HomeScreen() {
             await trackingService.logWater(user.uid, amount);
             loadData(); // Refresh data
         } catch (error) {
-            console.error('Failed to log water:', error);
+            if (__DEV__) console.error('Failed to log water:', error);
         }
     };
 
@@ -133,7 +133,7 @@ export default function HomeScreen() {
                 Alert.alert('Exercise Completed', 'You have already logged your exercise for today! Great job! 💪');
             }
         } catch (error) {
-            console.error('Failed to log exercise:', error);
+            if (__DEV__) console.error('Failed to log exercise:', error);
         }
     };
 

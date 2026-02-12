@@ -67,7 +67,7 @@ export default function MealPlansScreen() {
             setFavorites(userFavorites);
             setSavedFavoriteIds(new Set(userFavorites.map(f => f.id)));
         } catch (error) {
-            console.error('Failed to load meal plan:', error);
+            if (__DEV__) console.error('Failed to load meal plan:', error);
         } finally {
             setLoading(false);
         }
@@ -89,7 +89,7 @@ export default function MealPlansScreen() {
             setSelectedDay(0);
             Alert.alert('Plan Generated! 🎉', `Your ${duration === '1week' ? '1-week' : duration === '2weeks' ? '2-week' : '4-week'} meal plan is ready.`);
         } catch (error: any) {
-            console.error('Failed to generate plan:', error);
+            if (__DEV__) console.error('Failed to generate plan:', error);
             Alert.alert('Generation Failed', error.message || 'Please try again later.');
         } finally {
             setGenerating(false);
@@ -115,7 +115,7 @@ export default function MealPlansScreen() {
             setFavorites(prev => [...prev, favMeal]);
             Alert.alert('Saved!', `${meal.name} added to favorites.`);
         } catch (error) {
-            console.error('Failed to save favorite:', error);
+            if (__DEV__) console.error('Failed to save favorite:', error);
             Alert.alert('Error', 'Could not save favorite. Please try again.');
         }
     };

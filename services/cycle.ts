@@ -39,6 +39,8 @@ export interface CycleSettings {
 export interface CycleInfo {
     currentPhase: CyclePhase;
     dayOfCycle: number;
+    cycleLength: number;
+    periodLength: number;
     nextPeriodDate: Date;
     fertileWindowStart: Date;
     fertileWindowEnd: Date;
@@ -108,7 +110,7 @@ class CycleService {
                 }
             }
         } catch (error) {
-            console.error('Failed to log cycle day:', error);
+            if (__DEV__) console.error('Failed to log cycle day:', error);
             throw error;
         }
     }
@@ -135,7 +137,7 @@ class CycleService {
                 ...doc.data()
             } as CycleDayLog));
         } catch (error) {
-            console.error('Failed to get daily logs:', error);
+            if (__DEV__) console.error('Failed to get daily logs:', error);
             return [];
         }
     }
@@ -168,7 +170,7 @@ class CycleService {
                 notifications: true,
             };
         } catch (error) {
-            console.error('Failed to get cycle settings:', error);
+            if (__DEV__) console.error('Failed to get cycle settings:', error);
             return {
                 userId,
                 averageCycleLength: 28,
@@ -187,7 +189,7 @@ class CycleService {
                 updatedAt: serverTimestamp(),
             });
         } catch (error) {
-            console.error('Failed to save cycle settings:', error);
+            if (__DEV__) console.error('Failed to save cycle settings:', error);
             throw error;
         }
     }
@@ -214,7 +216,7 @@ class CycleService {
 
             return docRef.id;
         } catch (error) {
-            console.error('Failed to log period start:', error);
+            if (__DEV__) console.error('Failed to log period start:', error);
             throw error;
         }
     }
@@ -241,7 +243,7 @@ class CycleService {
                 .sort((a, b) => b.startDate.getTime() - a.startDate.getTime())
                 .slice(0, count);
         } catch (error) {
-            console.error('Failed to get recent periods:', error);
+            if (__DEV__) console.error('Failed to get recent periods:', error);
             return [];
         }
     }
@@ -286,6 +288,8 @@ class CycleService {
         return {
             currentPhase,
             dayOfCycle,
+            cycleLength,
+            periodLength,
             nextPeriodDate,
             fertileWindowStart,
             fertileWindowEnd,

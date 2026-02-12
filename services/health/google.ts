@@ -32,7 +32,7 @@ class GoogleFitService {
 
     async checkAvailability(): Promise<boolean> {
         if (!this.isAvailable) {
-            console.log('Google Fit is only available on Android');
+            if (__DEV__) console.log('Google Fit is only available on Android');
             return false;
         }
         return true;
@@ -44,18 +44,18 @@ class GoogleFitService {
         try {
             // In production with real Google Fit:
             // const result = await GoogleFit.authorize({ scopes: GOOGLE_FIT_SCOPES });
-            console.log('Google Fit authorization would be requested here');
+            if (__DEV__) console.log('Google Fit authorization would be requested here');
             this.isAuthorized = true;
             return true;
         } catch (error) {
-            console.error('Failed to authorize Google Fit:', error);
+            if (__DEV__) console.error('Failed to authorize Google Fit:', error);
             return false;
         }
     }
 
     async disconnect(): Promise<void> {
         this.isAuthorized = false;
-        console.log('Disconnected from Google Fit');
+        if (__DEV__) console.log('Disconnected from Google Fit');
     }
 
     async getTodayData(): Promise<GoogleFitData> {
@@ -67,7 +67,7 @@ class GoogleFitService {
             // In production, fetch real data from Google Fit
             return this.getMockData();
         } catch (error) {
-            console.error('Failed to get Google Fit data:', error);
+            if (__DEV__) console.error('Failed to get Google Fit data:', error);
             return this.getMockData();
         }
     }

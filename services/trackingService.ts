@@ -141,13 +141,13 @@ class TrackingService {
             };
 
             const docRef = await addDoc(collection(db, 'mealLogs'), mealLog);
-            console.log('Successfully logged to mealLogs with ID:', docRef.id);
+            if (__DEV__) console.log('Successfully logged to mealLogs with ID:', docRef.id);
 
             // Also log to the main 'meals' collection so it shows up in the dashboard/history
             try {
                 // Use top-level import if possible, but for now wrap in try-catch with logging
                 const { mealService } = require('./meals');
-                console.log('Attempting to dual-log to meals collection for user:', userId);
+                if (__DEV__) console.log('Attempting to dual-log to meals collection for user:', userId);
                 const mainDocId = await mealService.logMeal(
                     userId,
                     [scanned], // Pass as array of foods
@@ -157,15 +157,15 @@ class TrackingService {
                     score ?? undefined,
                     feedback
                 );
-                console.log('Successfully dual-logged to meals with ID:', mainDocId);
+                if (__DEV__) console.log('Successfully dual-logged to meals with ID:', mainDocId);
             } catch (innerError) {
-                console.error('CRITICAL: Failed to dual-log to meals collection:', innerError);
+                if (__DEV__) console.error('CRITICAL: Failed to dual-log to meals collection:', innerError);
                 // Do not throw here, so we at least pass the primary log
             }
 
             return { ...mealLog, id: docRef.id };
         } catch (error) {
-            console.error('Failed to log meal:', error);
+            if (__DEV__) console.error('Failed to log meal:', error);
             throw error;
         }
     }
@@ -185,7 +185,7 @@ class TrackingService {
             const docRef = await addDoc(collection(db, 'waterLogs'), log);
             return { ...log, id: docRef.id };
         } catch (error) {
-            console.error('Failed to log water:', error);
+            if (__DEV__) console.error('Failed to log water:', error);
             throw error;
         }
     }
@@ -206,7 +206,7 @@ class TrackingService {
             const docRef = await addDoc(collection(db, 'exerciseLogs'), log);
             return { ...log, id: docRef.id };
         } catch (error) {
-            console.error('Failed to log exercise:', error);
+            if (__DEV__) console.error('Failed to log exercise:', error);
             throw error;
         }
     }
@@ -233,7 +233,7 @@ class TrackingService {
 
             return { ...log, id: docRef.id };
         } catch (error) {
-            console.error('Failed to log weight:', error);
+            if (__DEV__) console.error('Failed to log weight:', error);
             throw error;
         }
     }
@@ -306,7 +306,7 @@ class TrackingService {
             return progress;
 
         } catch (error) {
-            console.error('Failed to get daily progress:', error);
+            if (__DEV__) console.error('Failed to get daily progress:', error);
             return {
                 caloriesConsumed: 0,
                 proteinConsumed: 0,
@@ -433,7 +433,7 @@ class TrackingService {
             };
 
         } catch (error) {
-            console.error('Failed to generate wellness report:', error);
+            if (__DEV__) console.error('Failed to generate wellness report:', error);
             throw error;
         }
     }

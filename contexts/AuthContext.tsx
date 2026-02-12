@@ -148,7 +148,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             return acc;
         }, {} as any);
 
-        console.log('Creating user profile with onboarding data:', cleanedProfile);
+        if (__DEV__) console.log('Creating user profile with onboarding data:', cleanedProfile);
         await setDoc(doc(db, 'users', newUser.uid), cleanedProfile);
         setUserProfile(cleanedProfile);
 
@@ -158,9 +158,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 // Import dynamically to avoid circular dependencies if any (though here it's fine)
                 const { notificationService } = require('@/services/notificationService');
                 await notificationService.scheduleMealReminders(onboardingData.mealTimes);
-                console.log('Meal time notifications scheduled');
+                if (__DEV__) console.log('Meal time notifications scheduled');
             } catch (error) {
-                console.error('Failed to schedule meal notifications:', error);
+                if (__DEV__) console.error('Failed to schedule meal notifications:', error);
             }
         }
 
@@ -175,9 +175,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     notifications: true,
                 };
                 await cycleService.saveCycleSettings(cycleSettings);
-                console.log('Cycle settings saved successfully');
+                if (__DEV__) console.log('Cycle settings saved successfully');
             } catch (error) {
-                console.error('Failed to save cycle settings during registration:', error);
+                if (__DEV__) console.error('Failed to save cycle settings during registration:', error);
                 // Non-blocking error
             }
         }
@@ -190,12 +190,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const updateUserProfile = async (data: Partial<UserProfile>) => {
         if (!user) {
-            console.log('No user - cannot update profile');
+            if (__DEV__) console.log('No user - cannot update profile');
             return;
         }
 
         try {
-            console.log('Updating profile with:', data);
+            if (__DEV__) console.log('Updating profile with:', data);
             const updatedProfile = { ...userProfile, ...data };
 
             // Update Firestore
@@ -207,9 +207,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             }
 
             setUserProfile(updatedProfile as UserProfile);
-            console.log('Profile updated successfully');
+            if (__DEV__) console.log('Profile updated successfully');
         } catch (error) {
-            console.error('Failed to update profile:', error);
+            if (__DEV__) console.error('Failed to update profile:', error);
             throw error;
         }
     };
@@ -220,7 +220,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         try {
-            console.log('Starting Apple Sign-In...');
+            if (__DEV__) console.log('Starting Apple Sign-In...');
 
             // Generate a random nonce
             const rawNonce = Math.random().toString(36).substring(2, 10) +
@@ -229,7 +229,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 ExpoCrypto.CryptoDigestAlgorithm.SHA256,
                 rawNonce
             );
-            console.log('Generated nonce');
+            if (__DEV__) console.log('Generated nonce');
 
             // Get Apple credential with nonce
             const appleCredential = await AppleAuthentication.signInAsync({
@@ -239,7 +239,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 ],
                 nonce: hashedNonce,
             });
-            console.log('Got Apple credential, identity token:', appleCredential.identityToken?.substring(0, 50) + '...');
+            if (__DEV__) console.log('Got Apple credential, identity token:', appleCredential.identityToken?.substring(0, 50) + '...');
 
             // Create Firebase OAuth credential with raw nonce
             const provider = new OAuthProvider('apple.com');
@@ -247,17 +247,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 idToken: appleCredential.identityToken!,
                 rawNonce: rawNonce, // Firebase needs the raw (unhashed) nonce
             });
-            console.log('Created Firebase credential');
+            if (__DEV__) console.log('Created Firebase credential');
 
             // Sign in with Firebase
-            console.log('Signing in with Firebase...');
+            if (__DEV__) console.log('Signing in with Firebase...');
             const result = await signInWithCredential(auth, credential);
-            console.log('Firebase sign-in successful, user ID:', result.user.uid);
+            if (__DEV__) console.log('Firebase sign-in successful, user ID:', result.user.uid);
 
             // Create/update user profile (Apple only provides name on first sign-in)
             const profileDoc = await getDoc(doc(db, 'users', result.user.uid));
             if (!profileDoc.exists()) {
-                console.log('Creating new user profile...');
+                if (__DEV__) console.log('Creating new user profile...');
                 const fullName = appleCredential.fullName;
                 const displayName = fullName
                     ? `${fullName.givenName || ''} ${fullName.familyName || ''}`.trim()
@@ -273,17 +273,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 };
                 await setDoc(doc(db, 'users', result.user.uid), profile);
                 setUserProfile(profile);
-                console.log('Profile created successfully');
+                if (__DEV__) console.log('Profile created successfully');
             } else {
-                console.log('User profile already exists, loading it...');
+                if (__DEV__) console.log('User profile already exists, loading it...');
                 setUserProfile(profileDoc.data() as UserProfile);
             }
 
-            console.log('Apple Sign-In complete!');
+            if (__DEV__) console.log('Apple Sign-In complete!');
         } catch (error: any) {
-            console.error('Apple Sign-In error:', error);
-            console.error('Error code:', error.code);
-            console.error('Error message:', error.message);
+            if (__DEV__) console.error('Apple Sign-In error:', error);
+            if (__DEV__) console.error('Error code:', error.code);
+            if (__DEV__) console.error('Error message:', error.message);
             if (error.code === 'ERR_REQUEST_CANCELED') {
                 throw new Error('Sign-in was cancelled');
             }

@@ -66,7 +66,7 @@ class OnboardingStorageService {
             const updated = { ...existing, ...data };
             await AsyncStorage.setItem(ONBOARDING_KEY, JSON.stringify(updated));
         } catch (error) {
-            console.error('Failed to save onboarding data:', error);
+            if (__DEV__) console.error('Failed to save onboarding data:', error);
         }
     }
 
@@ -78,7 +78,7 @@ class OnboardingStorageService {
             const data = await AsyncStorage.getItem(ONBOARDING_KEY);
             return data ? JSON.parse(data) : null;
         } catch (error) {
-            console.error('Failed to get onboarding data:', error);
+            if (__DEV__) console.error('Failed to get onboarding data:', error);
             return null;
         }
     }
@@ -149,7 +149,7 @@ class OnboardingStorageService {
         try {
             await AsyncStorage.removeItem(ONBOARDING_KEY);
         } catch (error) {
-            console.error('Failed to clear onboarding data:', error);
+            if (__DEV__) console.error('Failed to clear onboarding data:', error);
         }
     }
 

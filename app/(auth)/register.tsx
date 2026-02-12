@@ -57,7 +57,7 @@ export default function RegisterScreen() {
         try {
             // 1. Get onboarding data first
             const onboardingData = await onboardingStorage.getProfileData();
-            console.log('Onboarding data to transfer:', onboardingData);
+            if (__DEV__) console.log('Onboarding data to transfer:', onboardingData);
 
             // 2. Create the account with onboarding data merged
             await signUp(email, password, name, onboardingData || undefined);
@@ -71,7 +71,7 @@ export default function RegisterScreen() {
                 { text: 'OK', onPress: () => router.replace('/(tabs)') }
             ]);
         } catch (error: any) {
-            console.error('Registration error:', error);
+            if (__DEV__) console.error('Registration error:', error);
 
             if (error.code === 'auth/email-already-in-use' || error.message?.includes('email-already-in-use')) {
                 setLoading(false); // Ensure loading is off before alert
