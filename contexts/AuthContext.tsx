@@ -126,10 +126,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     const signUp = async (email: string, password: string, displayName: string, onboardingData?: Record<string, any>) => {
+        if (__DEV__) console.log('[signUp] Creating Firebase account...');
         const { user: newUser } = await createUserWithEmailAndPassword(auth, email, password);
+        if (__DEV__) console.log('[signUp] Account created:', newUser.uid);
 
-        // Update display name
+        if (__DEV__) console.log('[signUp] Updating display name...');
         await updateProfile(newUser, { displayName });
+        if (__DEV__) console.log('[signUp] Display name updated');
 
         // Create user profile in Firestore, merging onboarding data if available
         const profile: UserProfile = {
@@ -151,30 +154,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             return acc;
         }, {} as any);
 
-        if (__DEV__) console.log('Creating user profile with onboarding data:', cleanedProfile);
+        if (__DEV__) console.log('[signUp] Writing profile to Firestore...');
         await setDoc(doc(db, 'users', newUser.uid), cleanedProfile);
+        if (__DEV__) console.log('[signUp] Profile written to Firestore');
         setUserProfile(cleanedProfile);
 
-        // Fire-and-forget: schedule notifications (don't block registration)
+        // Schedule notification reminders if meal times are set
         if (onboardingData?.mealTimes) {
-            const { notificationService } = require('@/services/notificationService');
-            notificationService.scheduleMealReminders(onboardingData.mealTimes).catch((error: any) => {
-                if (__DEV__) console.error('Failed to schedule meal notifications:', error);
-            });
+            try {
+                if (__DEV__) console.log('[signUp] Scheduling meal notifications...');
+                const { notificationService } = require('@/services/notificationService');
+                await notificationService.scheduleMealReminders(onboardingData.mealTimes);
+                if (__DEV__) console.log('[signUp] Meal notifications scheduled');
+            } catch (error) {
+                if (__DEV__) console.error('[signUp] Failed to schedule meal notifications:', error);
+            }
         }
 
-        // Fire-and-forget: save cycle settings (don't block registration)
+        // Save Cycle Settings if available
         if (onboardingData?.trackCycle) {
-            const cycleSettings: CycleSettings = {
-                userId: newUser.uid,
-                averageCycleLength: onboardingData.cycleLength || 28,
-                averagePeriodLength: onboardingData.periodLength || 5,
-                lastPeriodStart: onboardingData.lastPeriodDate ? new Date(onboardingData.lastPeriodDate) : undefined,
-                notifications: true,
-            };
-            cycleService.saveCycleSettings(cycleSettings).catch((error: any) => {
-                if (__DEV__) console.error('Failed to save cycle settings during registration:', error);
-            });
+            try {
+                if (__DEV__) console.log('[signUp] Saving cycle settings...');
+                const cycleSettings: CycleSettings = {
+                    userId: newUser.uid,
+                    averageCycleLength: onboardingData.cycleLength || 28,
+                    averagePeriodLength: onboardingData.periodLength || 5,
+                    lastPeriodStart: onboardingData.lastPeriodDate ? new Date(onboardingData.lastPeriodDate) : undefined,
+                    notifications: true,
+                };
+                await cycleService.saveCycleSettings(cycleSettings);
+                if (__DEV__) console.log('[signUp] Cycle settings saved');
+            } catch (error) {
+                if (__DEV__) console.error('[signUp] Failed to save cycle settings:', error);
+            }
         }
     };
 

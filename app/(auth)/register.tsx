@@ -75,18 +75,24 @@ export default function RegisterScreen() {
         setLoading(true);
         try {
             // 1. Get onboarding data first
+            if (__DEV__) console.log('[register] Loading onboarding data...');
             const onboardingData = await onboardingStorage.getProfileData();
-            if (__DEV__) console.log('Onboarding data to transfer:', onboardingData);
+            if (__DEV__) console.log('[register] Onboarding data:', onboardingData ? 'present' : 'none');
 
             // 2. Create the account with onboarding data merged
+            if (__DEV__) console.log('[register] Calling signUp...');
             await signUp(email, password, name, onboardingData || undefined);
+            if (__DEV__) console.log('[register] signUp complete');
 
-            // 3. Clear local onboarding data after successful transfer (fire-and-forget)
+            // 3. Clear local onboarding data after successful transfer
             if (onboardingData) {
-                onboardingStorage.clearOnboardingData().catch(() => {});
+                if (__DEV__) console.log('[register] Clearing onboarding data...');
+                await onboardingStorage.clearOnboardingData();
+                if (__DEV__) console.log('[register] Onboarding data cleared');
             }
 
-            // 4. Navigate immediately — don't wait for an alert tap
+            // 4. Navigate to main app
+            if (__DEV__) console.log('[register] Navigating to tabs...');
             router.replace('/(tabs)');
         } catch (error: any) {
             if (__DEV__) console.error('Registration error:', error);
