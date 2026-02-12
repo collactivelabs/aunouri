@@ -158,25 +158,26 @@ export default function LoginScreen() {
                         <View style={[styles.dividerLine, { backgroundColor: theme.border }]} />
                     </View>
 
-                    {/* Social Login */}
-                    <View style={styles.socialButtons}>
+                    {/* Platform-specific SSO */}
+                    {Platform.OS === 'ios' ? (
                         <TouchableOpacity
                             style={[styles.socialButton, { backgroundColor: theme.card, borderColor: theme.border }]}
                             onPress={handleAppleLogin}
                             disabled={loading}
                         >
                             <Ionicons name="logo-apple" size={24} color={theme.text} />
-                            <Text style={[styles.socialText, { color: theme.text }]}>Apple</Text>
+                            <Text style={[styles.socialText, { color: theme.text }]}>Continue with Apple</Text>
                         </TouchableOpacity>
+                    ) : (
                         <TouchableOpacity
                             style={[styles.socialButton, { backgroundColor: theme.card, borderColor: theme.border }]}
                             onPress={handleGoogleLogin}
                             disabled={loading}
                         >
                             <Ionicons name="logo-google" size={24} color={theme.text} />
-                            <Text style={[styles.socialText, { color: theme.text }]}>Google</Text>
+                            <Text style={[styles.socialText, { color: theme.text }]}>Continue with Google</Text>
                         </TouchableOpacity>
-                    </View>
+                    )}
 
                     {/* Sign Up Link */}
                     <View style={styles.signupContainer}>
@@ -226,9 +227,7 @@ const styles = StyleSheet.create({
     divider: { flexDirection: 'row', alignItems: 'center', marginVertical: spacing.lg },
     dividerLine: { flex: 1, height: 1 },
     dividerText: { ...Typography.caption, marginHorizontal: spacing.md },
-    socialButtons: { flexDirection: 'row', gap: spacing.md, marginBottom: spacing.xl },
     socialButton: {
-        flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
@@ -236,6 +235,7 @@ const styles = StyleSheet.create({
         borderRadius: borderRadius.lg,
         borderWidth: 1,
         gap: spacing.sm,
+        marginBottom: spacing.xl,
     },
     // socialIcon: { fontSize: 20 },
     socialText: { ...Typography.button },

@@ -29,13 +29,31 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function RegisterScreen() {
     const colorScheme = useColorScheme() ?? 'light';
     const theme = Colors[colorScheme];
-    const { signUp } = useAuth();
+    const { signUp, signInWithApple, signInWithGoogle } = useAuth();
 
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
+
+    const handleSsoSignUp = async (provider: 'apple' | 'google') => {
+        setLoading(true);
+        try {
+            if (provider === 'apple') {
+                await signInWithApple();
+            } else {
+                await signInWithGoogle();
+            }
+            router.replace('/(tabs)');
+        } catch (error: any) {
+            if (__DEV__) console.error(`${provider} sign-up error:`, error);
+            const label = provider === 'apple' ? 'Apple' : 'Google';
+            Alert.alert(`${label} Sign-In`, error.message || `Could not sign in with ${label}`);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleRegister = async () => {
         if (!name || !email || !password || !confirmPassword) {
@@ -183,6 +201,34 @@ export default function RegisterScreen() {
                             />
                         </View>
 
+                        {/* Divider */}
+                        <View style={styles.divider}>
+                            <View style={[styles.dividerLine, { backgroundColor: theme.border }]} />
+                            <Text style={[styles.dividerText, { color: theme.textMuted }]}>or sign up with</Text>
+                            <View style={[styles.dividerLine, { backgroundColor: theme.border }]} />
+                        </View>
+
+                        {/* Platform-specific SSO */}
+                        {Platform.OS === 'ios' ? (
+                            <TouchableOpacity
+                                style={[styles.socialButton, { backgroundColor: theme.card, borderColor: theme.border }]}
+                                onPress={() => handleSsoSignUp('apple')}
+                                disabled={loading}
+                            >
+                                <Ionicons name="logo-apple" size={24} color={theme.text} />
+                                <Text style={[styles.socialText, { color: theme.text }]}>Continue with Apple</Text>
+                            </TouchableOpacity>
+                        ) : (
+                            <TouchableOpacity
+                                style={[styles.socialButton, { backgroundColor: theme.card, borderColor: theme.border }]}
+                                onPress={() => handleSsoSignUp('google')}
+                                disabled={loading}
+                            >
+                                <Ionicons name="logo-google" size={24} color={theme.text} />
+                                <Text style={[styles.socialText, { color: theme.text }]}>Continue with Google</Text>
+                            </TouchableOpacity>
+                        )}
+
                         {/* Login Link */}
                         <View style={styles.loginContainer}>
                             <Text style={[styles.loginText, { color: theme.textSecondary }]}>
@@ -229,6 +275,20 @@ const styles = StyleSheet.create({
         borderWidth: 1,
     },
     terms: { ...Typography.caption, textAlign: 'center', marginBottom: spacing.lg },
+    divider: { flexDirection: 'row', alignItems: 'center', marginVertical: spacing.lg },
+    dividerLine: { flex: 1, height: 1 },
+    dividerText: { ...Typography.caption, marginHorizontal: spacing.md },
+    socialButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: 52,
+        borderRadius: borderRadius.lg,
+        borderWidth: 1,
+        gap: spacing.sm,
+        marginBottom: spacing.lg,
+    },
+    socialText: { ...Typography.button },
     loginContainer: { flexDirection: 'row', justifyContent: 'center' },
     loginText: { ...Typography.body },
     loginLink: { ...Typography.body, fontWeight: '600' },
